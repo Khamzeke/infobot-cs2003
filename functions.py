@@ -1,6 +1,6 @@
 import psycopg2
 
-connection = psycopg2.connect("postgres://njnqrmdigvejhd:e80eb8d9793a6c14e93c659ec8c5c5bec24e7e094ca60fae69d3ff700af3557d@ec2-54-170-163-224.eu-west-1.compute.amazonaws.com:5432/d4vc64r446iltm", sslmode="required")
+connection = psycopg2.connect("postgres://njnqrmdigvejhd:e80eb8d9793a6c14e93c659ec8c5c5bec24e7e094ca60fae69d3ff700af3557d@ec2-54-170-163-224.eu-west-1.compute.amazonaws.com:5432/d4vc64r446iltm")
 cursor = connection.cursor()
 
 data = []
