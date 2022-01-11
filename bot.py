@@ -310,9 +310,28 @@ async def getMsg(msg: types.Message):
     global gotQuestion
     functions.rollBack()
     status = functions.getStatus(msg.from_user.id)
+    u = functions.getAnon()
     print(status)
+    if msg.text.lower() == "отмена":
+        await msg.reply("Задача отменена")
+        functions.setStatus(msg.from_user.id, "None")
+        return
+    if status[0] == 'question':
+        functions.addQuestion(msg.from_user.id, msg.text)
+        await bot.send_message(347821020, "Задан новый вопрос, чтобы просмотреть /questions")
+        await msg.reply("Вопрос отправлен, ожидайте ответ!")
+        functions.setStatus(msg.from_user.id, "None")
+        return
+
+    if msg.text == "+":
+        await bot.send_message(347821020, msg.from_user.username + " согласился!")
+        return
+
+    if msg.text == "-":
+        await msg.reply("Принято!")
+        await bot.send_message(347821020, msg.from_user.username + " отказался от участия!")
+        return
     if msg.chat.type == 'private':
-        u = functions.getAnon()
         if u is not None:
             if msg.from_user.id == u[0]:
                 if status[0] == 'gotMsgFromUser':
@@ -335,10 +354,6 @@ async def getMsg(msg: types.Message):
                     await msg.answer("Сообщение отправлено!")
                     functions.setStatus(msg.from_user.id, 'None')
                     return
-        if msg.text.lower() == "отмена":
-            await msg.reply("Задача отменена")
-            functions.setStatus(msg.from_user.id, "None")
-            return
         if msg.from_user.id == 347821020:
             if status[0] == 'gotMsg':
                 theText = msg.text
@@ -416,22 +431,7 @@ async def getMsg(msg: types.Message):
 
             functions.setStatus(msg.from_user.id, "None")
             return
-    if status[0] == 'question':
-        functions.addQuestion(msg.from_user.id, msg.text)
-        await bot.send_message(347821020, "Задан новый вопрос, чтобы просмотреть /questions")
-        await msg.reply("Вопрос отправлен, ожидайте ответ!")
-        functions.setStatus(msg.from_user.id, "None")
-        return
 
-    if msg.text == "+":
-        await bot.send_message(347821020, msg.from_user.username + " согласился!")
-        return
-
-    if msg.text == "-":
-        await msg.reply("Принято!")
-        await bot.send_message(347821020, msg.from_user.username + " отказался от участия!")
-        return
-    if msg.chat.type == 'private':
         await bot.send_message(msg.from_user.id, "Привет, не пиши мне без причины! Вот доступные команды - /commands")
     return
 
