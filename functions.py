@@ -10,13 +10,15 @@ data = []
 users = {}
 
 def getMainMenu():
-    keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    keyboard.add(KeyboardButton(text="/subscribe"))
-    keyboard.add(KeyboardButton(text="Рассылка для определенных людей"))
-    keyboard.add(KeyboardButton(text="/Заданные_вопросы"))
-    keyboard.add(KeyboardButton(text="/Поместить_в_актуальные"))
-    keyboard.add(KeyboardButton(text="/Удалить_из_актуальных"))
-    return keyboard
+    s = "Подписаться на уведомления - /subscribe\n" \
+        "Отписаться от уведомлении - /unsubscribe\n" \
+        "Задать вопрос - /question\n" \
+        "Актуальные вопросы - /answers\n" \
+        "Оставить запрос на аноним - /request\n" \
+        "Ответить на сообщения анонимного пользователя - '/sa your message'\n" \
+        "Написать сообщение от имени анонимного пользователя - /msg_to_user\n" \
+        "Закончить сессию анонимного пользователя - /end_session"
+    return s
 
 
 def updateUsers():

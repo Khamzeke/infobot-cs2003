@@ -157,25 +157,16 @@ async def myQuestions(message: types.Message):
 
 @dp.message_handler(commands=['commands'])
 async def help(message: types.Message):
-    s = "Подписаться на уведомления - /subscribe\n" \
-        "Отписаться от уведомлении - /unsubscribe\n" \
-        "Задать вопрос - /question\n" \
-        "Актуальные вопросы - /answers\n" \
-        "Оставить запрос на аноним - /request\n" \
-        "Ответить на сообщения анонимного пользователя - '/sa your message'\n" \
-        "Написать сообщение от имени анонимного пользователя - /msg_to_user\n" \
-        "Закончить сессию анонимного пользователя - /end_session"
-
+    s = functions.getMainMenu()
     await message.answer(s)
     return
 
 
 @dp.message_handler(commands=['subscribe'])
 async def func(message: types.Message):
-    await message.answer("works")
     user = functions.getUser(message.from_user.id)
-    await message.answer(user)
-    if user is None:
+    if user is None or user[2]=='None':
+        functions.deleteStudent(message.from_user.id)
         functions.addStudent(message.from_user.id, message.from_user.username, "None")
         await message.answer("Напишите свое имя на английском языке(Example: Sugurov Khamza)")
         functions.setStatus(message.from_user.id, "theName")
@@ -335,10 +326,26 @@ async def getMsg(msg: types.Message):
     if msg.text == "+":
         await bot.send_message(347821020, msg.from_user.username + " согласился!")
         return
-
+    if msg.text.lower() == "бот":
+        await msg.reply("Главное меню - /commands\n"
+                        "Посмотреть актуальные - /interesting")
+        return
     if msg.text == "-":
         await msg.reply("Принято!")
         await bot.send_message(347821020, msg.from_user.username + " отказался от участия!")
+        return
+    if status[0] == 'theName':
+        name = msg.text
+        try:
+            functions.updateStudent(msg.from_user.id, name)
+            string = msg.from_user.username + " успешно подписался на Ваши уведомления! Его ID: " + str(
+                msg.from_user.id)
+            await bot.send_message(347821020, string)
+            await msg.answer("Вы успешно подписались на уведомления!")
+        except:
+            await msg.answer("Что то пошло не так")
+
+        functions.setStatus(msg.from_user.id, "None")
         return
     if msg.chat.type == 'private':
         if u is not None:
@@ -427,19 +434,7 @@ async def getMsg(msg: types.Message):
                 await msg.reply("Вопросы удалены со вкладки актуальных!")
                 return
 
-        if status[0] == 'theName':
-            name = msg.text
-            try:
-                functions.updateStudent(msg.from_user.id, name)
-                string = msg.from_user.username + " успешно подписался на Ваши уведомления! Его ID: " + str(
-                    msg.from_user.id)
-                await bot.send_message(347821020, string)
-                await msg.answer("Вы успешно подписались на уведомления!")
-            except:
-                await msg.answer("Что то пошло не так")
 
-            functions.setStatus(msg.from_user.id, "None")
-            return
 
         await bot.send_message(msg.from_user.id, "Привет, не пиши мне без причины! Вот доступные команды - /commands")
     return
