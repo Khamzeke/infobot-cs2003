@@ -423,7 +423,7 @@ async def getMsg(msg: types.Message):
                 for id in ids:
                     functions.removeInteresting(id)
                 await msg.reply("Вопросы удалены со вкладки актуальных!")
-            return
+                return
 
         if status[0] == 'theName':
             name = msg.text
