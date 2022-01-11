@@ -17,6 +17,7 @@ print(users)
 
 theText = ""
 
+
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message):
     await message.answer("Привет, список доступных команд /commands\n"
@@ -37,7 +38,7 @@ async def updateData(message: types.Message):
 @dp.message_handler(commands=['question'])
 async def question(message: types.Message):
     functions.setStatus(message.from_user.id, "question")
-    await message.answer("Напишите Ваш вопрос либо отмените свое действие /cancel")
+    await message.reply("Напишите Ваш вопрос либо отмените свое действие /cancel")
     return
 
 
@@ -55,7 +56,7 @@ async def makeInteresting(message: types.Message):
         questions = functions.getAnswered()
         s = "Отвеченные вопросы:\n "
         for question in questions:
-            s+=str(question[4]) + ". " + question[0] + "\n"
+            s += str(question[4]) + ". " + question[0] + "\n"
 
         await message.answer(s)
         await message.answer("Введите id вопросов, которые хотите поместить в актуальные через запятую. Например (1, 2, 3..)")
@@ -77,6 +78,7 @@ async def removeInteresting(message: types.Message):
         functions.setStatus(message.from_user.id, "removeInteresting")
     return
 
+
 @dp.message_handler(commands=['notAnswered'])
 async def notAnswered(message: types.Message):
     if message.from_user.id == 347821020:
@@ -84,7 +86,7 @@ async def notAnswered(message: types.Message):
         await message.answer("Введите id вопроса чтобы ответить, либо /cancel")
         s = ""
         for question in questions:
-            s+=str(question[4])+". "+question[0] + "\n"
+            s += str(question[4]) + ". " + question[0] + "\n"
         await message.answer(s)
         functions.setStatus(message.from_user.id, "questionNum")
     return
@@ -97,7 +99,7 @@ async def allQuestions(message: types.Message):
         await message.answer("Введите id вопроса чтобы изменить, либо /cancel")
         s = ""
         for question in questions:
-            s+=str(question[4])+". "+question[0] + " :"+ question[1] +"\n"
+            s += str(question[4]) + ". " + question[0] + " :" + question[1] + "\n"
         await message.answer(s)
         functions.setStatus(message.from_user.id, "questionNum")
     return
@@ -122,21 +124,22 @@ async def changeQuestion(message: types.Message):
 @dp.message_handler(commands=['answers'])
 async def answers(message: types.Message):
     await message.answer("Актуальные вопросы - /interesting\n"
-                   "Ваши вопросы - /myQuestions")
+                         "Ваши вопросы - /myQuestions")
     return
+
 
 @dp.message_handler(commands=["interesting"])
 async def actualQuestions(message: types.Message):
     questions = functions.getInteresting()
     s = "АКТУАЛЬНЫЕ ВОПРОСЫ:\n"
     for question in questions:
-        s+= "---------------------------\n"\
-            "Вопрос номер "+str(question[4])+":\n" \
-            "Вопрос: " + question[0] + "\n" \
-            "Ответ: " + question[1] +"\n" \
-
+        s += "---------------------------\n" \
+             "Вопрос номер " + str(question[4]) + ":\n" \
+                                                  "Вопрос: " + question[0] + "\n" \
+                                                                             "Ответ: " + question[1] + "\n"
     await message.answer(s)
     return
+
 
 @dp.message_handler(commands=['myQuestions'])
 async def myQuestions(message: types.Message):
@@ -144,15 +147,15 @@ async def myQuestions(message: types.Message):
 
     s = "МОИ ВОПРОСЫ:\n"
     for question in questions:
-        s+="--------------------------------\n"\
-           "Вопрос номер "+str(question[4])+":\n" \
-            "Вопрос: " + question[0] + "\n" \
-            "Ответ: " + question[1] +"\n" \
-
+        s += "--------------------------------\n" \
+             "Вопрос номер " + str(question[4]) + ":\n" \
+                                                  "Вопрос: " + question[0] + "\n" \
+                                                                             "Ответ: " + question[1] + "\n"
     await message.answer(s)
     return
 
-@dp.message_handler(commands=['commands'])
+
+@dp.message_handler(commands=['commands','help'])
 async def help(message: types.Message):
     s = "Подписаться на уведомления - /subscribe\n" \
         "Отписаться от уведомлении - /unsubscribe\n" \
@@ -294,6 +297,7 @@ async def makeAnon(message: types.Message):
 @dp.message_handler(commands=["cancel"])
 async def cancel(message: types.Message):
     functions.setStatus(message.from_user.id, "None")
+
     await message.reply("Задача отменена")
     return
 
@@ -305,113 +309,113 @@ async def getMsg(msg: types.Message):
     global chosenNum
     global gotQuestion
     functions.rollBack()
-    u = functions.getAnon()
     status = functions.getStatus(msg.from_user.id)
     print(status)
-    if u is not None:
-        if msg.from_user.id == u[0]:
-            if status[0] == 'gotMsgFromUser':
+    if msg.chat.type == 'private':
+        u = functions.getAnon()
+        if u is not None:
+            if msg.from_user.id == u[0]:
+                if status[0] == 'gotMsgFromUser':
+                    theText = msg.text
+                    theText = "Аноним: " + theText
+                    s = ""
+                    c = 1
+                    functions.setStatus(msg.from_user.id, 'None')
+                    for u in functions.data:
+                        s += str(c) + ". " + u[1] + "\n"
+                        c += 1
+                    await msg.answer("Введи ID человека:\n" + s)
+                    functions.setStatus(msg.from_user.id, 'forNAFromUser')
+                    return
+                if status[0] == 'forNAFromUser':
+                    id = msg.text
+                    await bot.send_message(functions.data[int(id) - 1][0], theText)
+                    await bot.send_message(functions.data[int(id) - 1][0], "Чтобы ответить, наберите '/sa ваш ответ'")
+                    await bot.send_message(347821020, "(" + msg.from_user.username + ")" + theText)
+                    await msg.answer("Сообщение отправлено!")
+                    functions.setStatus(msg.from_user.id, 'None')
+                    return
+        if msg.text.lower() == "отмена":
+            await msg.reply("Задача отменена")
+            functions.setStatus(msg.from_user.id, "None")
+            return
+        if msg.from_user.id == 347821020:
+            if status[0] == 'gotMsg':
                 theText = msg.text
-                theText = "Аноним: " + theText
+                functions.setStatus(msg.from_user.id, 'None')
                 s = ""
                 c = 1
-                functions.setStatus(msg.from_user.id,'None')
                 for u in functions.data:
                     s += str(c) + ". " + u[1] + "\n"
                     c += 1
-                await msg.answer("Введи ID человека:\n" + s)
-                functions.setStatus(msg.from_user.id,'forNAFromUser')
+                await bot.send_message(347821020, "Введите ID людей через запятую с пробелом:\n" + s)
+                functions.setStatus(msg.from_user.id, 'forNA')
                 return
-            if status[0] == 'forNAFromUser':
-                id = msg.text
-                await bot.send_message(functions.data[int(id) - 1][0], theText)
-                await bot.send_message(functions.data[int(id) - 1][0], "Чтобы ответить, наберите '/sa ваш ответ'")
-                await bot.send_message(347821020, "(" + msg.from_user.username + ")" + theText)
-                await msg.answer("Сообщение отправлено!")
-                functions.setStatus(msg.from_user.id,'None')
+            if status[0] == 'forNA':
+                ids = msg.text.split(', ')
+                for id in ids:
+                    await bot.send_message(functions.data[int(id) - 1][0], theText)
+                    # await bot.send_message(functions.data[int(id) - 1][0], "Напиши мне '+', чтобы я знал что ты в курсе,"
+                    #                                             "но помни что отговорки по типу 'Я не читал' - не "
+                    #                                             "действительны!")
+                functions.setStatus(msg.from_user.id, "None")
                 return
-    if msg.text.lower() == "отмена":
-        await msg.reply("Задача отменена")
-        functions.setStatus(msg.from_user.id, "None")
-        return
-    if msg.from_user.id == 347821020:
-        if status[0] == 'gotMsg':
-            theText = msg.text
-            functions.setStatus(msg.from_user.id,'None')
-            s = ""
-            c = 1
-            for u in functions.data:
-                s += str(c) + ". " + u[1] + "\n"
-                c += 1
-            await bot.send_message(347821020, "Введите ID людей через запятую с пробелом:\n" + s)
-            functions.setStatus(msg.from_user.id, 'forNA')
-            return
-        if status[0] == 'forNA':
-            ids = msg.text.split(', ')
-            for id in ids:
-                await bot.send_message(functions.data[int(id) - 1][0], theText)
-                # await bot.send_message(functions.data[int(id) - 1][0], "Напиши мне '+', чтобы я знал что ты в курсе,"
-                #                                             "но помни что отговорки по типу 'Я не читал' - не "
-                #                                             "действительны!")
-            functions.setStatus(msg.from_user.id, "None")
-            return
-        if status[0] == 'gotMsgForAll':
-            theText = msg.text
-            functions.setStatus(msg.from_user.id, "None")
-            for user in functions.data:
-                await bot.send_message(user[0], theText)
-            return
-        if status[0] == 'questionNum':
-            functions.setStatus(msg.from_user.id, "None")
-            gotQuestion = functions.getQuestion(int(msg.text))
-            await msg.answer("Если вы хотите исправить вопрос, то /changeQuestion\n"
-                             "Если вы хотите ответить на вопрос /sendAnswer")
-            functions.setStatus(msg.from_user.id, "gotQuestionNum")
-            return
-        if status[0] == 'setAnswer':
-            functions.setStatus(msg.from_user.id, "None")
-            functions.setAnswer(gotQuestion[4], msg.text)
-            await msg.reply("Ответ отправлен!")
-            await bot.send_message(gotQuestion[3], "Вы получили ответ на свой вопрос, можете просмотреть их тут "
-                                                   "/answers")
+            if status[0] == 'gotMsgForAll':
+                theText = msg.text
+                functions.setStatus(msg.from_user.id, "None")
+                for user in functions.data:
+                    await bot.send_message(user[0], theText)
+                return
+            if status[0] == 'questionNum':
+                functions.setStatus(msg.from_user.id, "None")
+                gotQuestion = functions.getQuestion(int(msg.text))
+                await msg.answer("Если вы хотите исправить вопрос, то /changeQuestion\n"
+                                 "Если вы хотите ответить на вопрос /sendAnswer")
+                functions.setStatus(msg.from_user.id, "gotQuestionNum")
+                return
+            if status[0] == 'setAnswer':
+                functions.setStatus(msg.from_user.id, "None")
+                functions.setAnswer(gotQuestion[4], msg.text)
+                await msg.reply("Ответ отправлен!")
+                await bot.send_message(gotQuestion[3], "Вы получили ответ на свой вопрос, можете просмотреть их тут "
+                                                       "/answers")
 
-            return
-        if status[0] == 'setNewQuestion':
-            functions.setStatus(msg.from_user.id, "None")
-            functions.setQuestion(gotQuestion[4], msg.text)
-            await msg.reply("Вопрос изменен!")
-            await bot.send_message(gotQuestion[3], "Ваш вопрос был изменен старостой! \n"
-                                                   "Для того чтобы узнать причину, обратитесь к @yeapit")
-            return
-        if status[0] == 'makeInteresting':
-            functions.setStatus(msg.from_user.id, "None")
-            ids = msg.text.split(', ')
-            for id in ids:
-                functions.setInteresting(id)
-            await msg.reply("Вопросы перемещены во вкладку актуальные!")
-            return
-        if status[0] == 'removeInteresting':
-            functions.setStatus(msg.from_user.id, "None")
-            ids = msg.text.split(', ')
-            for id in ids:
-                functions.removeInteresting(id)
-            await msg.reply("Вопросы удалены со вкладки актуальных!")
+                return
+            if status[0] == 'setNewQuestion':
+                functions.setStatus(msg.from_user.id, "None")
+                functions.setQuestion(gotQuestion[4], msg.text)
+                await msg.reply("Вопрос изменен!")
+                await bot.send_message(gotQuestion[3], "Ваш вопрос был изменен старостой! \n"
+                                                       "Для того чтобы узнать причину, обратитесь к @yeapit")
+                return
+            if status[0] == 'makeInteresting':
+                functions.setStatus(msg.from_user.id, "None")
+                ids = msg.text.split(', ')
+                for id in ids:
+                    functions.setInteresting(id)
+                await msg.reply("Вопросы перемещены во вкладку актуальные!")
+                return
+            if status[0] == 'removeInteresting':
+                functions.setStatus(msg.from_user.id, "None")
+                ids = msg.text.split(', ')
+                for id in ids:
+                    functions.removeInteresting(id)
+                await msg.reply("Вопросы удалены со вкладки актуальных!")
             return
 
+        if status[0] == 'theName':
+            name = msg.text
+            try:
+                functions.updateStudent(msg.from_user.id, name)
+                string = msg.from_user.username + " успешно подписался на Ваши уведомления! Его ID: " + str(
+                    msg.from_user.id)
+                await bot.send_message(347821020, string)
+                await msg.answer("Вы успешно подписались на уведомления!")
+            except:
+                await msg.answer("Что то пошло не так")
 
-    if status[0] == 'theName':
-        name = msg.text
-        try:
-            functions.updateStudent(msg.from_user.id, name)
-            string = msg.from_user.username + " успешно подписался на Ваши уведомления! Его ID: " + str(
-                msg.from_user.id)
-            await bot.send_message(347821020, string)
-            await msg.answer("Вы успешно подписались на уведомления!")
-        except:
-            await msg.answer("Что то пошло не так")
-
-        functions.setStatus(msg.from_user.id, "None")
-        return
+            functions.setStatus(msg.from_user.id, "None")
+            return
     if status[0] == 'question':
         functions.addQuestion(msg.from_user.id, msg.text)
         await bot.send_message(347821020, "Задан новый вопрос, чтобы просмотреть /questions")
@@ -419,17 +423,16 @@ async def getMsg(msg: types.Message):
         functions.setStatus(msg.from_user.id, "None")
         return
 
-
     if msg.text == "+":
-        await bot.send_message(347821020, msg.from_user.username + " в курсе последнего события!")
+        await bot.send_message(347821020, msg.from_user.username + " согласился!")
         return
 
     if msg.text == "-":
         await msg.reply("Принято!")
         await bot.send_message(347821020, msg.from_user.username + " отказался от участия!")
         return
-
-    await bot.send_message(msg.from_user.id, "Привет, не пиши мне без причины! Вот доступные команды - /commands")
+    if msg.chat.type == 'private':
+        await bot.send_message(msg.from_user.id, "Привет, не пиши мне без причины! Вот доступные команды - /commands")
     return
 
 
