@@ -29,7 +29,7 @@ async def start(message: types.Message):
 @dp.message_handler(commands=['update'])
 async def updateData(message: types.Message):
     global users
-    if message.from_user.id == 347821020:
+    if message.from_user.id == 347821020 and message.chat.type=='private':
         users = functions.updateUsers()
 
     await message.answer("Updated!")
@@ -44,7 +44,7 @@ async def question(message: types.Message):
 
 @dp.message_handler(commands=['questions', 'Заданные_вопросы'])
 async def questions(message: types.Message):
-    if message.from_user.id == 347821020:
+    if message.from_user.id == 347821020 and message.chat.type=='private':
         await message.answer("Вопросы без ответа /notAnswered\n"
                              "Все вопросы /allQuestions")
     return
@@ -52,7 +52,7 @@ async def questions(message: types.Message):
 
 @dp.message_handler(commands=['makeInteresting', 'Поместить_в_актуальные'])
 async def makeInteresting(message: types.Message):
-    if message.from_user.id == 347821020:
+    if message.from_user.id == 347821020 and message.chat.type=='private':
         questions = functions.getAnswered()
         s = "Отвеченные вопросы:\n "
         for question in questions:
@@ -66,7 +66,7 @@ async def makeInteresting(message: types.Message):
 
 @dp.message_handler(commands=['removeInteresting', 'Удалить_из_актуальных'])
 async def removeInteresting(message: types.Message):
-    if message.from_user.id == 347821020:
+    if message.from_user.id == 347821020 and message.chat.type=='private':
         questions = functions.getInteresting()
         s = "Актуальные вопросы:\n"
         for question in questions:
@@ -81,7 +81,7 @@ async def removeInteresting(message: types.Message):
 
 @dp.message_handler(commands=['notAnswered'])
 async def notAnswered(message: types.Message):
-    if message.from_user.id == 347821020:
+    if message.from_user.id == 347821020 and message.chat.type=='private':
         questions = functions.getNotAnswered()
         await message.answer("Введите id вопроса чтобы ответить, либо /cancel")
         s = ""
@@ -94,7 +94,7 @@ async def notAnswered(message: types.Message):
 
 @dp.message_handler(commands=['allQuestions'])
 async def allQuestions(message: types.Message):
-    if message.from_user.id == 347821020:
+    if message.from_user.id == 347821020 and message.chat.type=='private':
         questions = functions.getQuestions()
         await message.answer("Введите id вопроса чтобы изменить, либо /cancel")
         s = ""
@@ -155,7 +155,7 @@ async def myQuestions(message: types.Message):
     return
 
 
-@dp.message_handler(commands=['commands','help'])
+@dp.message_handler(commands=['commands'])
 async def help(message: types.Message):
     s = "Подписаться на уведомления - /subscribe\n" \
         "Отписаться от уведомлении - /unsubscribe\n" \
@@ -196,8 +196,8 @@ async def unsubscribe(message: types.Message):
 
 @dp.message_handler(commands=['admin'])
 async def admin(message: types.Message):
-    if message.from_user.id == 347821020:
-        keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    if message.from_user.id == 347821020 and message.chat.type=='private':
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
         keyboard.add(KeyboardButton(text="Рассылка для всех"))
         keyboard.add(KeyboardButton(text="Рассылка для определенных людей"))
         keyboard.add(KeyboardButton(text="/Заданные_вопросы"))
@@ -209,7 +209,7 @@ async def admin(message: types.Message):
 
 @dp.message_handler(text=["Рассылка для определенных людей"])
 async def msgs(message: types.Message):
-    if message.from_user.id == 347821020:
+    if message.from_user.id == 347821020 and message.chat.type=='private':
         await bot.send_message(347821020, "Введите ваш текст:")
         functions.setStatus(message.from_user.id, "gotMsg")
         return
@@ -217,7 +217,7 @@ async def msgs(message: types.Message):
 
 @dp.message_handler(text=["Рассылка для всех"])
 async def forAllMsg(message: types.Message):
-    if message.from_user.id == 347821020:
+    if message.from_user.id == 347821020 and message.chat.type=='private':
         await bot.send_message(347821020, "Введите ваш текст:")
         functions.setStatus(message.from_user.id, "gotMsgForAll")
         return
@@ -225,14 +225,17 @@ async def forAllMsg(message: types.Message):
 
 @dp.message_handler(commands=["msg_to_user"])
 async def msgToUser(message: types.Message):
-    u = functions.getAnon()
-    if u is not None:
-        if message.from_user.id == u[0]:
-            await message.answer("Введите ваш текст:")
-            functions.setStatus(message.from_user.id, "gotMsgFromUser")
-            return
+    if message.chat.type=='private':
+        u = functions.getAnon()
+        if u is not None:
+            if message.from_user.id == u[0]:
+                await message.answer("Введите ваш текст:")
+                functions.setStatus(message.from_user.id, "gotMsgFromUser")
+                return
 
-    await message.answer("У вас нет доступа! Запросите доступ по команде /request")
+        await message.answer("У вас нет доступа! Запросите доступ по команде /request")
+    else:
+        await message.reply("Функция недоступна в беседе!")
     return
 
 
@@ -244,46 +247,50 @@ async def request(message: types.Message):
 
     u = functions.getAnon()
     if u is not None:
-        await message.answer("На данный момент другой пользователь пользуется анонимкой, прошу подождать!")
+        await message.reply("На данный момент другой пользователь пользуется анонимкой, прошу подождать!")
+        await bot.send_message(u[0], "Другой пользователь запрашивает анонимку, если Вы больше не пользуетесь ей,"
+                                     "то /end_session")
         await bot.send_message(347821020, "На данный момент другой пользователь пользуется анонимкой, прошу подождать!")
     return
 
 
 @dp.message_handler(commands=["end_session"])
 async def endSession(message: types.Message):
-    u = functions.getAnon()
-    if u is not None:
-        if message.from_user.id == u[0] or message.from_user.id == 347821020:
-            functions.removeAnon()
-            await bot.send_message(u[0], "Ваша сессия закончена!")
-            await bot.send_message(347821020, "Пользователь " + str(u[0]) + " закончил сессию!")
+    if message.chat.type=='private':
+        u = functions.getAnon()
+        if u is not None:
+            if message.from_user.id == u[0] or message.from_user.id == 347821020:
+                functions.removeAnon()
+                await bot.send_message(u[0], "Ваша сессия закончена!")
+                await bot.send_message(347821020, "Пользователь " + str(u[0]) + " закончил сессию!")
+            else:
+                await message.answer("Вы не анонимный пользователь!")
         else:
-            await message.answer("Вы не анонимный пользователь!")
-    else:
-        await message.answer("Анонимного пользователя нет!")
+            await message.answer("Анонимного пользователя нет!")
     return
 
 
 @dp.message_handler(commands=["sa"])
 async def msgToAnonim(message: types.Message):
-    msg = message.text.replace("/sa ", "").strip()
-    msg = message.from_user.username + ": " + msg
-    u = functions.getAnon()
-    if u is not None:
-        if u[0] == message.from_user.id:
-            await message.answer("Вы не можете отправлять сообщения самому себе!")
+    if message.chat.type=='private':
+        msg = message.text.replace("/sa ", "").strip()
+        msg = message.from_user.username + ": " + msg
+        u = functions.getAnon()
+        if u is not None:
+            if u[0] == message.from_user.id:
+                await message.answer("Вы не можете отправлять сообщения самому себе!")
+                return
+            await bot.send_message(u[0], msg)
+            await message.reply("Письмо анонимному пользователю отправлено!")
+            await bot.send_message(347821020, "Пользователь " + msg)
             return
-        await bot.send_message(u[0], msg)
-        await message.reply("Письмо анонимному пользователю отправлено!")
-        await bot.send_message(347821020, "Пользователь " + msg)
-        return
-    await message.answer("Анонимный пользователь не назначен! ")
+        await message.answer("Анонимный пользователь не назначен! ")
     return
 
 
 @dp.message_handler(commands=["make_anon"])
 async def makeAnon(message: types.Message):
-    if message.from_user.id == 347821020:
+    if message.from_user.id == 347821020 and message.chat.type=='private':
         msg = message.text.replace("/make_anon ", '').strip()
         try:
             functions.setAnon(msg)
@@ -354,7 +361,7 @@ async def getMsg(msg: types.Message):
                     await msg.answer("Сообщение отправлено!")
                     functions.setStatus(msg.from_user.id, 'None')
                     return
-        if msg.from_user.id == 347821020:
+        if msg.from_user.id == 347821020 and msg.chat.type=='private':
             if status[0] == 'gotMsg':
                 theText = msg.text
                 functions.setStatus(msg.from_user.id, 'None')
