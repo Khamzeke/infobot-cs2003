@@ -172,7 +172,9 @@ async def help(message: types.Message):
 
 @dp.message_handler(commands=['subscribe'])
 async def func(message: types.Message):
+    await message.answer("works")
     user = functions.getUser(message.from_user.id)
+    await message.answer(user)
     if user is None:
         functions.addStudent(message.from_user.id, message.from_user.username, "None")
         await message.answer("Напишите свое имя на английском языке(Example: Sugurov Khamza)")
