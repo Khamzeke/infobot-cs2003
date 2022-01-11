@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import psycopg2
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
@@ -10,10 +12,10 @@ users = {}
 def getMainMenu():
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     keyboard.add(KeyboardButton(text="/subscribe"))
-    keyboard.add(KeyboardButton(text="Рассылка для определенных людей"))
-    keyboard.add(KeyboardButton(text="/Заданные_вопросы"))
-    keyboard.add(KeyboardButton(text="/Поместить_в_актуальные"))
-    keyboard.add(KeyboardButton(text="/Удалить_из_актуальных"))
+    keyboard.add(KeyboardButton(text="Р Р°СЃСЃС‹Р»РєР° РґР»СЏ РѕРїСЂРµРґРµР»РµРЅРЅС‹С… Р»СЋРґРµР№"))
+    keyboard.add(KeyboardButton(text="/Р—Р°РґР°РЅРЅС‹Рµ_РІРѕРїСЂРѕСЃС‹"))
+    keyboard.add(KeyboardButton(text="/РџРѕРјРµСЃС‚РёС‚СЊ_РІ_Р°РєС‚СѓР°Р»СЊРЅС‹Рµ"))
+    keyboard.add(KeyboardButton(text="/РЈРґР°Р»РёС‚СЊ_РёР·_Р°РєС‚СѓР°Р»СЊРЅС‹С…"))
     return keyboard
 
 
