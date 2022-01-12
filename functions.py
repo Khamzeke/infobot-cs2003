@@ -3,7 +3,9 @@
 import psycopg2
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
-connection = psycopg2.connect("postgres://pybqqwbwxlwahz:60d8be99ff5295ac8571db24490b1b483f19fd6144b4310def7eb74c0d391246@ec2-99-81-18-35.eu-west-1.compute.amazonaws.com:5432/db1n8ve51n6uet")
+import config
+
+connection = psycopg2.connect(config.URL)
 cursor = connection.cursor()
 
 data = []
