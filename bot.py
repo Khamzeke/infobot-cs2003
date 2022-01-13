@@ -17,6 +17,8 @@ print(users)
 
 theText = ""
 
+blacklist = []
+
 
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message):
@@ -34,7 +36,6 @@ async def updateData(message: types.Message):
         await message.answer("Updated!")
     else:
         await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
-
 
 
 @dp.message_handler(commands=['question'])
@@ -172,6 +173,42 @@ async def myQuestions(message: types.Message):
 async def help(message: types.Message):
     s = functions.getMainMenu()
     await message.answer(s)
+    return
+
+
+@dp.message_handler(commands=['add'])
+async def addBlackList(message: types.Message):
+    if message.from_user.id == 347821020:
+        msg = message.text.replace("/add ", '').strip()
+        blacklist.append(msg)
+        await bot.send_message(msg, "Вы добавлены в черный список!")
+        await message.reply("Пользователь добавлен в черный список!")
+    else:
+        await message.reply("У Вас недостаточно прав!")
+    return
+
+
+@dp.message_handler(commands=['delete'])
+async def addBlackList(message: types.Message):
+    if message.from_user.id == 347821020:
+        msg = message.text.replace("/delete ", '').strip()
+        blacklist.remove(msg)
+        await bot.send_message(msg, "Вы больше не в черном списке!")
+        await message.reply("Пользователь удален из черного списка!")
+    else:
+        await message.reply("У Вас недостаточно прав!")
+    return
+
+
+@dp.message_handler(commands=['users'])
+async def showUsers(message: types.Message):
+    if message.from_user.id == 347821020 or message.chat.type == 'private':
+        t = ""
+        for name, id in users:
+            t += name + " " + id + "\n"
+        await message.reply("Список пользователей:\n" + t)
+    else:
+        await message.reply("У Вас недостаточно прав либо функция недоступна в беседе!")
     return
 
 
