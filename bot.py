@@ -18,7 +18,7 @@ print(users)
 theText = ""
 
 blacklist = []
-
+reactionEnabled = True
 
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message):
@@ -175,14 +175,32 @@ async def help(message: types.Message):
     await message.answer(s)
     return
 
+@dp.message_handler(commands=['disable','enable'])
+async def switchReaction(message: types.Message):
+    global reactionEnabled
+    if message.from_user.id == 347821020:
+        msg = message.text.replace("/", '').strip()
+        if msg == 'disable':
+            reactionEnabled = False
+        if msg == 'enable':
+            reactionEnabled = True
+
+        return
+    else:
+        await message.reply("У Вас недостаточно прав!")
+    return
+
 
 @dp.message_handler(commands=['add'])
 async def addBlackList(message: types.Message):
     if message.from_user.id == 347821020:
         msg = message.text.replace("/add ", '').strip()
-        blacklist.append(msg)
-        await bot.send_message(msg, "Вы добавлены в черный список!")
-        await message.reply("Пользователь добавлен в черный список!")
+        try:
+            blacklist.append(int(msg))
+            await bot.send_message(msg, "Вы добавлены в черный список!")
+            await message.reply("Пользователь добавлен в черный список!")
+        except:
+            await message.reply("Неверный ID")
     else:
         await message.reply("У Вас недостаточно прав!")
     return
@@ -192,9 +210,12 @@ async def addBlackList(message: types.Message):
 async def addBlackList(message: types.Message):
     if message.from_user.id == 347821020:
         msg = message.text.replace("/delete ", '').strip()
-        blacklist.remove(msg)
-        await bot.send_message(msg, "Вы больше не в черном списке!")
-        await message.reply("Пользователь удален из черного списка!")
+        try:
+            blacklist.remove(int(msg))
+            await bot.send_message(msg, "Вы больше не в черном списке!")
+            await message.reply("Пользователь удален из черного списка!")
+        except:
+            await message.reply("Неверный ID")
     else:
         await message.reply("У Вас недостаточно прав!")
     return
@@ -204,9 +225,20 @@ async def addBlackList(message: types.Message):
 async def showUsers(message: types.Message):
     if message.from_user.id == 347821020 or message.chat.type == 'private':
         t = ""
-        for name, id in users:
-            t += name + " " + id + "\n"
+        for id in users:
+            t += str(id) + " " + users[id] + "\n"
         await message.reply("Список пользователей:\n" + t)
+    else:
+        await message.reply("У Вас недостаточно прав либо функция недоступна в беседе!")
+    return
+
+@dp.message_handler(commands=['blackList'])
+async def blackListUsers(message: types.Message):
+    if message.from_user.id == 347821020 or message.chat.type == 'private':
+        t = ""
+        for id in blacklist:
+            t += str(id) + " " + users[id] + "\n"
+        await message.reply("Список пользователей в черном списке:\n" + t)
     else:
         await message.reply("У Вас недостаточно прав либо функция недоступна в беседе!")
     return
@@ -246,6 +278,7 @@ async def admin(message: types.Message):
         keyboard.add(KeyboardButton(text="/Заданные_вопросы"))
         keyboard.add(KeyboardButton(text="/Поместить_в_актуальные"))
         keyboard.add(KeyboardButton(text="/Удалить_из_актуальных"))
+        keyboard.add(KeyboardButton(text="/users"))
         await message.answer("Привет, Хамзеке, вот доступные функции", reply_markup=keyboard)
     else:
         await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
@@ -386,15 +419,24 @@ async def getMsg(msg: types.Message):
         return
 
     if msg.text == "+":
-        await bot.send_message(347821020, msg.from_user.username + " согласился!")
+        if reactionEnabled:
+            if msg.from_user.id in blacklist:
+                await msg.reply("Вы в черном списке!")
+            else:
+                await msg.reply("Принято!")
+                await bot.send_message(347821020, msg.from_user.username + " согласился!")
         return
     if msg.text.lower() == "бот":
         await msg.reply("Главное меню - /commands\n"
                         "Посмотреть актуальные - /interesting")
         return
     if msg.text == "-":
-        await msg.reply("Принято!")
-        await bot.send_message(347821020, msg.from_user.username + " отказался от участия!")
+        if reactionEnabled:
+            if msg.from_user.id in blacklist:
+                await msg.reply("Вы в черном списке!")
+            else:
+                await msg.reply("Принято!")
+                await bot.send_message(347821020, msg.from_user.username + " отказался от участия!")
         return
     if status[0] == 'theName':
         name = msg.text
