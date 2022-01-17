@@ -279,7 +279,23 @@ async def admin(message: types.Message):
         keyboard.add(KeyboardButton(text="/Поместить_в_актуальные"))
         keyboard.add(KeyboardButton(text="/Удалить_из_актуальных"))
         keyboard.add(KeyboardButton(text="/users"))
+        keyboard.add(KeyboardButton(text="/update"))
+        keyboard.add(KeyboardButton(text="/remove_from_bd"))
         await message.answer("Привет, Хамзеке, вот доступные функции", reply_markup=keyboard)
+    else:
+        await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
+    return
+
+@dp.message_handler(commands=["remove_from_bd"])
+async def removeFromBd(message: types.Message):
+    if message.from_user.id == 347821020 and message.chat.type == 'private':
+        functions.setStatus(347821020,"removeFromBd")
+        s = ""
+        c = 1
+        for u in functions.data:
+            s += str(c) + ". " + u[1] + "\n"
+            c += 1
+        await message.reply("Введите ID людей через запятую с пробелом:\n" + s)
     else:
         await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
     return
@@ -486,13 +502,19 @@ async def getMsg(msg: types.Message):
                 await bot.send_message(347821020, "Введите ID людей через запятую с пробелом:\n" + s)
                 functions.setStatus(msg.from_user.id, 'forNA')
                 return
+            if status[0] == 'removeFromBd':
+                ids = msg.text.split(', ')
+                for id in ids:
+                    await bot.send_message(id,"Вы удалены из подписок!")
+                    functions.deleteUser(id)
+
+                functions.setStatus(msg.from_user.id, "None")
+                return
+
             if status[0] == 'forNA':
                 ids = msg.text.split(', ')
                 for id in ids:
                     await bot.send_message(functions.data[int(id) - 1][0], theText)
-                    # await bot.send_message(functions.data[int(id) - 1][0], "Напиши мне '+', чтобы я знал что ты в курсе,"
-                    #                                             "но помни что отговорки по типу 'Я не читал' - не "
-                    #                                             "действительны!")
                 functions.setStatus(msg.from_user.id, "None")
                 return
             if status[0] == 'gotMsgForAll':

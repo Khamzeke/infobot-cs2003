@@ -167,3 +167,8 @@ def removeInteresting(question_id):
     sql = f"UPDATE public.questions SET interesting={False} WHERE question_id = {question_id};"
     cursor.execute(sql)
     connection.commit()
+
+def deleteUser(user_id):
+    sql = f"DELETE FROM public.students	WHERE id={user_id}"
+    cursor.execute(sql)
+    connection.commit()
