@@ -505,8 +505,9 @@ async def getMsg(msg: types.Message):
             if status[0] == 'removeFromBd':
                 ids = msg.text.split(', ')
                 for id in ids:
-                    await bot.send_message(id,"Вы удалены из подписок!")
-                    functions.deleteUser(id)
+                    await msg.reply("Пользователь " + str(functions.getUser(functions.data[int(id) - 1][0])) + " удалён из подписок!")
+                    await bot.send_message(functions.data[int(id) - 1][0],"Вы удалены из подписок!")
+                    functions.deleteUser(functions.data[int(id) - 1][0])
 
                 functions.setStatus(msg.from_user.id, "None")
                 return
