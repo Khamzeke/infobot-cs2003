@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from datetime import *
+
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup
 
 import config
@@ -18,7 +20,8 @@ print(users)
 theText = ""
 
 blacklist = []
-reactionEnabled = True
+reactionEnabled = False
+
 
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message):
@@ -191,36 +194,6 @@ async def switchReaction(message: types.Message):
     return
 
 
-@dp.message_handler(commands=['add'])
-async def addBlackList(message: types.Message):
-    if message.from_user.id == 347821020:
-        msg = message.text.replace("/add ", '').strip()
-        try:
-            blacklist.append(int(msg))
-            await bot.send_message(msg, "Вы добавлены в черный список!")
-            await message.reply("Пользователь добавлен в черный список!")
-        except:
-            await message.reply("Неверный ID")
-    else:
-        await message.reply("У Вас недостаточно прав!")
-    return
-
-
-@dp.message_handler(commands=['delete'])
-async def addBlackList(message: types.Message):
-    if message.from_user.id == 347821020:
-        msg = message.text.replace("/delete ", '').strip()
-        try:
-            blacklist.remove(int(msg))
-            await bot.send_message(msg, "Вы больше не в черном списке!")
-            await message.reply("Пользователь удален из черного списка!")
-        except:
-            await message.reply("Неверный ID")
-    else:
-        await message.reply("У Вас недостаточно прав!")
-    return
-
-
 @dp.message_handler(commands=['users'])
 async def showUsers(message: types.Message):
     if message.from_user.id == 347821020 or message.chat.type == 'private':
@@ -228,17 +201,6 @@ async def showUsers(message: types.Message):
         for id in users:
             t += str(id) + " " + users[id] + "\n"
         await message.reply("Список пользователей:\n" + t)
-    else:
-        await message.reply("У Вас недостаточно прав либо функция недоступна в беседе!")
-    return
-
-@dp.message_handler(commands=['blackList'])
-async def blackListUsers(message: types.Message):
-    if message.from_user.id == 347821020 or message.chat.type == 'private':
-        t = ""
-        for id in blacklist:
-            t += str(id) + " " + users[id] + "\n"
-        await message.reply("Список пользователей в черном списке:\n" + t)
     else:
         await message.reply("У Вас недостаточно прав либо функция недоступна в беседе!")
     return
@@ -321,95 +283,17 @@ async def forAllMsg(message: types.Message):
     return
 
 
-@dp.message_handler(commands=["msg_to_user"])
-async def msgToUser(message: types.Message):
-    if message.chat.type == 'private':
-        u = functions.getAnon()
-        if u is not None:
-            if message.from_user.id == u[0]:
-                await message.answer("Введите ваш текст:")
-                functions.setStatus(message.from_user.id, "gotMsgFromUser")
-                return
-
-        await message.answer("У вас нет доступа! Запросите доступ по команде /request")
-    else:
-        await message.reply("Функция недоступна в беседе!")
-    return
-
-
-@dp.message_handler(commands=["request"])
-async def request(message: types.Message):
-    await bot.send_message(347821020, "Пользователь " + message.from_user.username + " просит анонимность! Чтобы "
-                                                                                     "разрешить, отправь текст ниже!")
-    await bot.send_message(347821020, "/make_anon " + str(message.from_user.id))
-
-    u = functions.getAnon()
-    if u is not None:
-        await message.reply("На данный момент другой пользователь пользуется анонимкой, прошу подождать!")
-        await bot.send_message(u[0], "Другой пользователь запрашивает анонимку, если Вы больше не пользуетесь ей,"
-                                     "то /end_session")
-        await bot.send_message(347821020, "На данный момент другой пользователь пользуется анонимкой, прошу подождать!")
-    return
-
-
-@dp.message_handler(commands=["end_session"])
-async def endSession(message: types.Message):
-    if message.chat.type == 'private':
-        u = functions.getAnon()
-        if u is not None:
-            if message.from_user.id == u[0] or message.from_user.id == 347821020:
-                functions.removeAnon()
-                await bot.send_message(u[0], "Ваша сессия закончена!")
-                await bot.send_message(347821020, "Пользователь " + str(u[0]) + " закончил сессию!")
-            else:
-                await message.answer("Вы не анонимный пользователь!")
-        else:
-            await message.answer("Анонимного пользователя нет!")
-    else:
-        await message.reply("Функция недоступна в беседе!")
-    return
-
-
-@dp.message_handler(commands=["sa"])
-async def msgToAnonim(message: types.Message):
-    if message.chat.type == 'private':
-        msg = message.text.replace("/sa ", "").strip()
-        msg = message.from_user.username + ": " + msg
-        u = functions.getAnon()
-        if u is not None:
-            if u[0] == message.from_user.id:
-                await message.answer("Вы не можете отправлять сообщения самому себе!")
-                return
-            await bot.send_message(u[0], msg)
-            await message.reply("Письмо анонимному пользователю отправлено!")
-            await bot.send_message(347821020, "Пользователь " + msg)
-            return
-        await message.answer("Анонимный пользователь не назначен! ")
-    else:
-        await message.reply("Функция недоступна в беседе!")
-    return
-
-
-@dp.message_handler(commands=["make_anon"])
-async def makeAnon(message: types.Message):
-    if message.from_user.id == 347821020 and message.chat.type == 'private':
-        msg = message.text.replace("/make_anon ", '').strip()
-        try:
-            functions.setAnon(msg)
-            await bot.send_message(msg, "Теперь вы можете писать от имени бота анонимно по команде /msg_to_user")
-            await message.answer("Анонимный юзер установлен")
-        except:
-            await message.answer("Неправильный ID")
-    else:
-        await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
-    return
-
-
 @dp.message_handler(commands=["cancel"])
 async def cancel(message: types.Message):
     functions.setStatus(message.from_user.id, "None")
 
     await message.reply("Задача отменена")
+    return
+
+@dp.message_handler(commands=["birthday"])
+async def birthday(message: types.Message):
+    await message.reply("Укажите Вашу дату рождения в формате день/месяц/год (7/3/2000 : 7 марта 2000 года)")
+    functions.setStatus(message.from_user.id, "birthday")
     return
 
 
@@ -421,7 +305,6 @@ async def getMsg(msg: types.Message):
     global gotQuestion
     functions.rollBack()
     status = functions.getStatus(msg.from_user.id)
-    u = functions.getAnon()
     print(status)
     if msg.text.lower() == "отмена":
         await msg.reply("Задача отменена")
@@ -436,11 +319,8 @@ async def getMsg(msg: types.Message):
 
     if msg.text == "+":
         if reactionEnabled:
-            if msg.from_user.id in blacklist:
-                await msg.reply("Вы в черном списке!")
-            else:
-                await msg.reply("Принято!")
-                await bot.send_message(347821020, msg.from_user.username + " согласился!")
+            await msg.reply("Принято!")
+            await bot.send_message(347821020, msg.from_user.username + " согласился!")
         return
     if msg.text.lower() == "бот":
         await msg.reply("Главное меню - /commands\n"
@@ -448,11 +328,8 @@ async def getMsg(msg: types.Message):
         return
     if msg.text == "-":
         if reactionEnabled:
-            if msg.from_user.id in blacklist:
-                await msg.reply("Вы в черном списке!")
-            else:
-                await msg.reply("Принято!")
-                await bot.send_message(347821020, msg.from_user.username + " отказался от участия!")
+            await msg.reply("Принято!")
+            await bot.send_message(347821020, msg.from_user.username + " отказался от участия!")
         return
     if status[0] == 'theName':
         name = msg.text
@@ -461,36 +338,26 @@ async def getMsg(msg: types.Message):
             string = msg.from_user.username + " успешно подписался на Ваши уведомления! Его ID: " + str(
                 msg.from_user.id)
             await bot.send_message(347821020, string)
-            await msg.answer("Вы успешно подписались на уведомления!")
+            await msg.answer("Вы успешно подписались на уведомления!\n"
+                             "По желанию Вы можете указать Вашу дату рождения /birthday")
         except:
             await msg.answer("Что то пошло не так")
 
         functions.setStatus(msg.from_user.id, "None")
         return
+    if status[0] == 'birthday':
+        functions.setStatus(msg.from_user.id, "None")
+        dateString = msg.text
+        dateFormatter = "%d/%m/%Y"
+        birthday_date = datetime.strptime(dateString, dateFormatter)
+        functions.setUserBirthday(msg.from_user.id, birthday_date)
+        await bot.send_message(msg.from_user.id, str(birthday_date)+"- Ваша дата рождения! Если неверно ввели - "
+                                                                    "/birthday")
+        return
+
+
     if msg.chat.type == 'private':
-        if u is not None:
-            if msg.from_user.id == u[0]:
-                if status[0] == 'gotMsgFromUser':
-                    theText = msg.text
-                    theText = "Аноним: " + theText
-                    s = ""
-                    c = 1
-                    functions.setStatus(msg.from_user.id, 'None')
-                    for u in functions.data:
-                        s += str(c) + ". " + u[1] + "\n"
-                        c += 1
-                    await msg.answer("Введи ID человека:\n" + s)
-                    functions.setStatus(msg.from_user.id, 'forNAFromUser')
-                    return
-                if status[0] == 'forNAFromUser':
-                    id = msg.text
-                    await bot.send_message(functions.data[int(id) - 1][0], theText)
-                    await bot.send_message(functions.data[int(id) - 1][0], "Чтобы ответить, наберите '/sa ваш ответ'")
-                    await bot.send_message(347821020, "(" + msg.from_user.username + ")" + theText)
-                    await msg.answer("Сообщение отправлено!")
-                    functions.setStatus(msg.from_user.id, 'None')
-                    return
-        if msg.from_user.id == 347821020 and msg.chat.type == 'private':
+        if msg.from_user.id == 347821020:
             if status[0] == 'gotMsg':
                 theText = msg.text
                 functions.setStatus(msg.from_user.id, 'None')
@@ -563,7 +430,6 @@ async def getMsg(msg: types.Message):
 
         await bot.send_message(msg.from_user.id, "Привет, не пиши мне без причины! Вот доступные команды - /commands")
     return
-
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)

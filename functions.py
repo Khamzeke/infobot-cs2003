@@ -5,7 +5,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 import config
 
-connection = psycopg2.connect()
+connection = psycopg2.connect(config.URL)
 cursor = connection.cursor()
 
 data = []
@@ -15,11 +15,7 @@ def getMainMenu():
     s = "Подписаться на уведомления - /subscribe\n" \
         "Отписаться от уведомлении - /unsubscribe\n" \
         "Задать вопрос - /question\n" \
-        "Актуальные вопросы - /answers\n" \
-        "Оставить запрос на аноним - /request\n" \
-        "Ответить на сообщения анонимного пользователя - '/sa your message'\n" \
-        "Написать сообщение от имени анонимного пользователя - /msg_to_user\n" \
-        "Закончить сессию анонимного пользователя - /end_session"
+        "Актуальные вопросы - /answers"
     return s
 
 
@@ -79,27 +75,6 @@ def updateStudent(id, name):
     cursor.execute(new_sql)
     connection.commit()
 
-
-def getAnon():
-    sql = "SELECT id FROM public.students where anon='anon';"
-    cursor.execute(sql)
-    u = cursor.fetchone()
-    return u
-
-
-def removeAnon():
-    sql = "UPDATE public.students SET anon='None'"
-    cursor.execute(sql)
-    connection.commit()
-
-
-def setAnon(id):
-    sql = "UPDATE public.students SET anon='None'"
-    cursor.execute(sql)
-    connection.commit()
-    sql = "UPDATE public.students SET anon='anon' WHERE id=" + id + ";"
-    cursor.execute(sql)
-    connection.commit()
 
 
 def addQuestion(id, question):
@@ -170,5 +145,11 @@ def removeInteresting(question_id):
 
 def deleteUser(user_id):
     sql = f"DELETE FROM public.students	WHERE id={user_id}"
+    cursor.execute(sql)
+    connection.commit()
+
+
+def setUserBirthday(user_id, date):
+    sql = f"UPDATE public.students SET birthday='{date}' WHERE id={user_id};"
     cursor.execute(sql)
     connection.commit()
