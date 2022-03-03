@@ -5,7 +5,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 import config
 
-connection = psycopg2.connect(config.URL)
+connection = psycopg2.connect()
 cursor = connection.cursor()
 
 data = []
