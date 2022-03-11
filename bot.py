@@ -428,7 +428,13 @@ async def getMsg(msg: types.Message):
                 await msg.reply("Вопросы удалены со вкладки актуальных!")
                 return
 
-        await bot.send_message(msg.from_user.id, "Привет, не пиши мне без причины! Вот доступные команды - /commands")
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+        keyboard.add(KeyboardButton(text="✍️ Подписка на уведомления"))
+        keyboard.add(KeyboardButton(text="❌ Отписаться от уведомлении"))
+        keyboard.add(KeyboardButton(text="🙋‍♂️Задать вопрос"))
+        keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
+        await bot.send_message(msg.from_user.id, "Привет, не пиши мне без причины! Вот доступные команды: ", reply_markup=keyboard)
+
     return
 
 if __name__ == '__main__':
