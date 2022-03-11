@@ -25,9 +25,7 @@ reactionEnabled = False
 
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message):
-    await message.answer("Привет, список доступных команд /commands\n"
-                         "Подписка на бота /subscribe\n"
-                         "Чтобы отменить любое действие, напишите 'отмена' либо /cancel")
+    await message.answer("Привет, вот список доступных команд: ")
     return
 
 
@@ -172,10 +170,14 @@ async def myQuestions(message: types.Message):
     return
 
 
-@dp.message_handler(commands=['commands'])
+@dp.message_handler(text=['⌨️Команды'])
 async def help(message: types.Message):
-    s = functions.getMainMenu()
-    await message.answer(s)
+    keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    keyboard.add(KeyboardButton(text="✍️ Подписка на уведомления"))
+    keyboard.add(KeyboardButton(text="❌ Отписаться от уведомлении"))
+    keyboard.add(KeyboardButton(text="🙋‍♂️Задать вопрос"))
+    keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
+    await message.answer("Вот список доступных команд: ", reply_markup=keyboard)
     return
 
 @dp.message_handler(commands=['disable','enable'])
@@ -215,7 +217,7 @@ async def func(message: types.Message):
         await message.answer("Напишите свое имя на английском языке(Example: Sugurov Khamza)")
         functions.setStatus(message.from_user.id, "theName")
     else:
-        await message.answer("Вы уже подписаны! Чтобы отписаться нажмите /unsubscribe")
+        await message.answer("Вы уже подписаны!")
     return
 
 
@@ -227,7 +229,7 @@ async def unsubscribe(message: types.Message):
         await message.answer("Вы успешно отписались от уведомлений!")
         await bot.send_message(347821020, message.from_user.username + " отписался от уведомлении!")
     else:
-        await message.answer("Вы не подписаны! Чтобы подписаться нажмите /subscribe")
+        await message.answer("Вы не подписаны!")
     return
 
 
@@ -323,8 +325,10 @@ async def getMsg(msg: types.Message):
             await bot.send_message(347821020, msg.from_user.username + " согласился!")
         return
     if msg.text.lower() == "бот":
-        await msg.reply("Главное меню - /commands\n"
-                        "Посмотреть актуальные - /interesting")
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+        keyboard.add(KeyboardButton(text="⌨️Команды"))
+        keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
+        await msg.reply("Что Вас интересует?", reply_markup=keyboard)
         return
     if msg.text == "-":
         if reactionEnabled:
@@ -428,7 +432,7 @@ async def getMsg(msg: types.Message):
                 await msg.reply("Вопросы удалены со вкладки актуальных!")
                 return
 
-        keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
         keyboard.add(KeyboardButton(text="✍️ Подписка на уведомления"))
         keyboard.add(KeyboardButton(text="❌ Отписаться от уведомлении"))
         keyboard.add(KeyboardButton(text="🙋‍♂️Задать вопрос"))
