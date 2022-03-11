@@ -41,7 +41,7 @@ async def updateData(message: types.Message):
         await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
 
 
-@dp.message_handler(commands=['question'])
+@dp.message_handler(text=["🙋‍♂️Задать вопрос"])
 async def question(message: types.Message):
     functions.setStatus(message.from_user.id, "question")
     await message.reply("Напишите Ваш вопрос либо отмените свое действие /cancel")
@@ -145,7 +145,7 @@ async def answers(message: types.Message):
     return
 
 
-@dp.message_handler(commands=["interesting"])
+@dp.message_handler(text=["ℹ️Актуальные вопросы"])
 async def actualQuestions(message: types.Message):
     questions = functions.getInteresting()
     s = "АКТУАЛЬНЫЕ ВОПРОСЫ:\n"
@@ -206,7 +206,7 @@ async def showUsers(message: types.Message):
     return
 
 
-@dp.message_handler(commands=['subscribe'])
+@dp.message_handler(text=["✍️ Подписка на уведомления"])
 async def func(message: types.Message):
     user = functions.getUser(message.from_user.id)
     if user is None or user[2] == 'None':
@@ -219,7 +219,7 @@ async def func(message: types.Message):
     return
 
 
-@dp.message_handler(commands=['unsubscribe'])
+@dp.message_handler(text=["❌ Отписаться от уведомлении"])
 async def unsubscribe(message: types.Message):
     user = functions.getUser(message.from_user.id)
     if user is not None:
