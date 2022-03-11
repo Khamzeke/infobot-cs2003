@@ -172,12 +172,15 @@ async def myQuestions(message: types.Message):
 
 @dp.message_handler(text=['⌨️Команды'])
 async def help(message: types.Message):
-    s = functions.getMainMenu()
-    await message.answer("Вот список доступных команд: " + s)
+    keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    keyboard.add(KeyboardButton(text="✍️ Подписка на уведомления"))
+    keyboard.add(KeyboardButton(text="❌ Отписаться от уведомлении"))
+    keyboard.add(KeyboardButton(text="🙋‍♂️Задать вопрос"))
+    keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
+    await bot.send_message(message.from_user.id, "Вот список доступных команд: ", reply_markup=keyboard)
     return
 
-
-@dp.message_handler(commands=['disable', 'enable'])
+@dp.message_handler(commands=['disable','enable'])
 async def switchReaction(message: types.Message):
     global reactionEnabled
     if message.from_user.id == 347821020:
@@ -247,11 +250,10 @@ async def admin(message: types.Message):
         await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
     return
 
-
 @dp.message_handler(commands=["remove_from_bd"])
 async def removeFromBd(message: types.Message):
     if message.from_user.id == 347821020 and message.chat.type == 'private':
-        functions.setStatus(347821020, "removeFromBd")
+        functions.setStatus(347821020,"removeFromBd")
         s = ""
         c = 1
         for u in functions.data:
@@ -290,7 +292,6 @@ async def cancel(message: types.Message):
     await message.reply("Задача отменена")
     return
 
-
 @dp.message_handler(commands=["birthday"])
 async def birthday(message: types.Message):
     await message.reply("Укажите Вашу дату рождения в формате день/месяц/год (7/3/2000 : 7 марта 2000 года)")
@@ -323,7 +324,7 @@ async def getMsg(msg: types.Message):
             await msg.reply("Принято!")
             await bot.send_message(347821020, msg.from_user.username + " согласился!")
         return
-    # if msg.text.lower() == "бот":
+    #if msg.text.lower() == "бот":
     #    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
     #    keyboard.add(KeyboardButton(text="⌨️Команды"))
     #    keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
@@ -354,9 +355,10 @@ async def getMsg(msg: types.Message):
         dateFormatter = "%d/%m/%Y"
         birthday_date = datetime.strptime(dateString, dateFormatter)
         functions.setUserBirthday(msg.from_user.id, birthday_date)
-        await bot.send_message(msg.from_user.id, str(birthday_date) + "- Ваша дата рождения! Если неверно ввели - "
-                                                                      "/birthday")
+        await bot.send_message(msg.from_user.id, str(birthday_date)+"- Ваша дата рождения! Если неверно ввели - "
+                                                                    "/birthday")
         return
+
 
     if msg.chat.type == 'private':
         if msg.from_user.id == 347821020:
@@ -374,9 +376,8 @@ async def getMsg(msg: types.Message):
             if status[0] == 'removeFromBd':
                 ids = msg.text.split(', ')
                 for id in ids:
-                    await msg.reply("Пользователь " + str(
-                        functions.getUser(functions.data[int(id) - 1][0])) + " удалён из подписок!")
-                    await bot.send_message(functions.data[int(id) - 1][0], "Вы удалены из подписок!")
+                    await msg.reply("Пользователь " + str(functions.getUser(functions.data[int(id) - 1][0])) + " удалён из подписок!")
+                    await bot.send_message(functions.data[int(id) - 1][0],"Вы удалены из подписок!")
                     functions.deleteUser(functions.data[int(id) - 1][0])
 
                 functions.setStatus(msg.from_user.id, "None")
@@ -436,11 +437,9 @@ async def getMsg(msg: types.Message):
         keyboard.add(KeyboardButton(text="❌ Отписаться от уведомлении"))
         keyboard.add(KeyboardButton(text="🙋‍♂️Задать вопрос"))
         keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
-        await bot.send_message(msg.from_user.id, "Привет, не пиши мне без причины! Вот доступные команды: ",
-                               reply_markup=keyboard)
+        await bot.send_message(msg.from_user.id, "Привет, не пиши мне без причины! Вот доступные команды: ", reply_markup=keyboard)
 
     return
-
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
