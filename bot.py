@@ -172,12 +172,8 @@ async def myQuestions(message: types.Message):
 
 @dp.message_handler(text=['⌨️Команды'])
 async def help(message: types.Message):
-    keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    keyboard.add(KeyboardButton(text="✍️ Подписка на уведомления"))
-    keyboard.add(KeyboardButton(text="❌ Отписаться от уведомлении"))
-    keyboard.add(KeyboardButton(text="🙋‍♂️Задать вопрос"))
-    keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
-    await message.answer("Вот список доступных команд: ", reply_markup=keyboard)
+    s = functions.getMainMenu()
+    await message.answer("Вот список доступных команд: " + s)
     return
 
 @dp.message_handler(commands=['disable','enable'])
