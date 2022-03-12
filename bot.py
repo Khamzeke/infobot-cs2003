@@ -29,6 +29,7 @@ async def start(message: types.Message):
     keyboard.add(KeyboardButton(text="✍️ Подписка на уведомления"))
     keyboard.add(KeyboardButton(text="❌ Отписаться от уведомлении"))
     keyboard.add(KeyboardButton(text="🙋‍♂️Задать вопрос"))
+    keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
     await message.answer("Привет, вот список доступных команд: ", reply_markup=keyboard)
     return
 
