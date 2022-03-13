@@ -164,6 +164,6 @@ def getBirthdayUsers(id):
     return (newDate-today).days
 
 def userBlocked(id):
-    if getStatus(id) == "Blocked":
+    if getStatus(id)[0] == "Blocked":
         return True
     return False
