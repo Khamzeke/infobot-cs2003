@@ -215,7 +215,6 @@ async def showUsers(message: types.Message):
 
 @dp.message_handler(text=["✍️ Подписка на уведомления"])
 async def func(message: types.Message):
-    await message.answer(str(datetime.now().hour)+" "+str(datetime.now().minute))
     user = functions.getUser(message.from_user.id)
     if user is None or user[2] == 'None':
         functions.deleteStudent(message.from_user.id)
@@ -459,7 +458,7 @@ async def birthdayNotification():
     while True:
         await aioschedule.run_pending()
         await asyncio.sleep(1)
-        if datetime.now().hour == 0 and datetime.now().minute == 0 and datetime.now().second==0:
+        if datetime.now().hour == 18 and datetime.now().minute == 0 and datetime.now().second==0:
             for userId, name in users.items():
                 if functions.getBirthdayUsers(userId)<=5 and functions.getBirthdayUsers(userId)>=1 :
                     for u in users.keys():
