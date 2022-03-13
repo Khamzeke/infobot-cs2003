@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from datetime import *
-
+import aioschedule as schedule
+import time
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup
 
 import config
@@ -446,5 +447,10 @@ async def getMsg(msg: types.Message):
 
     return
 
+async def notification():
+    await bot.send_message(347821020, "hello")
+
+
 if __name__ == '__main__':
+    schedule.every(5).seconds.do(notification())
     executor.start_polling(dp, skip_updates=True)
