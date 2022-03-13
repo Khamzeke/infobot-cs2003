@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import asyncio
 from datetime import *
 import aioschedule as schedule
 import time
@@ -449,6 +450,8 @@ async def getMsg(msg: types.Message):
 
 async def notification():
     await bot.send_message(347821020, "hello")
+
+loop = asyncio.get_event_loop()
 
 
 if __name__ == '__main__':
