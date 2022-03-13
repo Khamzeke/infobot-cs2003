@@ -150,14 +150,17 @@ async def answers(message: types.Message):
 
 @dp.message_handler(text=["ℹ️Актуальные вопросы"])
 async def actualQuestions(message: types.Message):
-    questions = functions.getInteresting()
-    s = "АКТУАЛЬНЫЕ ВОПРОСЫ:\n"
-    for question in questions:
-        s += "---------------------------\n" \
-             "Вопрос номер " + str(question[4]) + ":\n" \
-                                                  "Вопрос: " + question[0] + "\n" \
-                                                                             "Ответ: " + question[1] + "\n"
-    await message.answer(s)
+    if message.from_user.id == 477470109 or message.from_user.id == 408168668:
+        await bot.send_message(message.from_user.id, "Вы заблокированы на некоторое время!")
+    else:
+        questions = functions.getInteresting()
+        s = "АКТУАЛЬНЫЕ ВОПРОСЫ:\n"
+        for question in questions:
+            s += "---------------------------\n" \
+                 "Вопрос номер " + str(question[4]) + ":\n" \
+                                                      "Вопрос: " + question[0] + "\n" \
+                                                                                 "Ответ: " + question[1] + "\n"
+        await message.answer(s)
     return
 
 
