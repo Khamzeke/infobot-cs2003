@@ -162,3 +162,8 @@ def getBirthdayUsers(id):
     newDate = datetime.date(today.year, user[3].month, user[3].day)
     print((newDate-today).days)
     return (newDate-today).days
+
+def userBlocked(id):
+    if getStatus(id) == "Blocked":
+        return True
+    return False

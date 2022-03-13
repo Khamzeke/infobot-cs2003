@@ -25,12 +25,16 @@ reactionEnabled = False
 
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message):
-    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add(KeyboardButton(text="✍️ Подписка на уведомления"))
-    keyboard.add(KeyboardButton(text="❌ Отписаться от уведомлении"))
-    keyboard.add(KeyboardButton(text="🙋‍♂️Задать вопрос"))
-    keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
-    await message.answer("Привет, вот список доступных команд: ", reply_markup=keyboard)
+    if functions.userBlocked(message.from_user.id):
+        await message.delete()
+        await bot.send_message(message.from_user.id, "Вы заблокированы на некоторое время!")
+    else:
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+        keyboard.add(KeyboardButton(text="✍️ Подписка на уведомления"))
+        keyboard.add(KeyboardButton(text="❌ Отписаться от уведомлении"))
+        keyboard.add(KeyboardButton(text="🙋‍♂️Задать вопрос"))
+        keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
+        await message.answer("Привет, вот список доступных команд: ", reply_markup=keyboard)
     return
 
 
@@ -46,8 +50,12 @@ async def updateData(message: types.Message):
 
 @dp.message_handler(text=["🙋‍♂️Задать вопрос"])
 async def question(message: types.Message):
-    functions.setStatus(message.from_user.id, "question")
-    await message.reply("Напишите Ваш вопрос либо отмените свое действие /cancel")
+    if functions.userBlocked(message.from_user.id):
+        await message.delete()
+        await bot.send_message(message.from_user.id, "Вы заблокированы на некоторое время!")
+    else:
+        functions.setStatus(message.from_user.id, "question")
+        await message.reply("Напишите Ваш вопрос либо отмените свое действие /cancel")
     return
 
 
@@ -88,7 +96,7 @@ async def removeInteresting(message: types.Message):
 
         await message.answer(s)
         await message.answer(
-            "Введите id вопросов, которые хотите удалить их актуальных через запятую. Например (1, 2, 3..)")
+            "Введите id вопросов, которые хотите удалить из актуальных через запятую. Например (1, 2, 3..)")
         functions.setStatus(message.from_user.id, "removeInteresting")
     else:
         await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
@@ -143,14 +151,19 @@ async def changeQuestion(message: types.Message):
 
 @dp.message_handler(commands=['answers'])
 async def answers(message: types.Message):
-    await message.answer("Актуальные вопросы - /interesting\n"
-                         "Ваши вопросы - /myQuestions")
+    if functions.userBlocked(message.from_user.id):
+        await message.delete()
+        await bot.send_message(message.from_user.id, "Вы заблокированы на некоторое время!")
+    else:
+        await message.answer("Актуальные вопросы - /interesting\n"
+                             "Ваши вопросы - /myQuestions")
     return
 
 
 @dp.message_handler(text=["ℹ️Актуальные вопросы"])
 async def actualQuestions(message: types.Message):
-    if message.from_user.id == 477470109 or message.from_user.id == 408168668:
+    if functions.userBlocked(message.from_user.id):
+        await message.delete()
         await bot.send_message(message.from_user.id, "Вы заблокированы на некоторое время!")
     else:
         questions = functions.getInteresting()
@@ -166,26 +179,34 @@ async def actualQuestions(message: types.Message):
 
 @dp.message_handler(commands=['myQuestions'])
 async def myQuestions(message: types.Message):
-    questions = functions.getMyQuestions(message.from_user.id)
+    if functions.userBlocked(message.from_user.id):
+        await message.delete()
+        await bot.send_message(message.from_user.id, "Вы заблокированы на некоторое время!")
+    else:
+        questions = functions.getMyQuestions(message.from_user.id)
 
-    s = "МОИ ВОПРОСЫ:\n"
-    for question in questions:
-        s += "--------------------------------\n" \
-             "Вопрос номер " + str(question[4]) + ":\n" \
-                                                  "Вопрос: " + question[0] + "\n" \
-                                                                             "Ответ: " + question[1] + "\n"
-    await message.answer(s)
+        s = "МОИ ВОПРОСЫ:\n"
+        for question in questions:
+            s += "--------------------------------\n" \
+                 "Вопрос номер " + str(question[4]) + ":\n" \
+                                                      "Вопрос: " + question[0] + "\n" \
+                                                                                 "Ответ: " + question[1] + "\n"
+        await message.answer(s)
     return
 
 
 @dp.message_handler(text=['⌨️Команды'])
 async def help(message: types.Message):
-    keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    keyboard.add(KeyboardButton(text="✍️ Подписка на уведомления"))
-    keyboard.add(KeyboardButton(text="❌ Отписаться от уведомлении"))
-    keyboard.add(KeyboardButton(text="🙋‍♂️Задать вопрос"))
-    keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
-    await bot.send_message(message.from_user.id, "Вот список доступных команд: ", reply_markup=keyboard)
+    if functions.userBlocked(message.from_user.id):
+        await message.delete()
+        await bot.send_message(message.from_user.id, "Вы заблокированы на некоторое время!")
+    else:
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+        keyboard.add(KeyboardButton(text="✍️ Подписка на уведомления"))
+        keyboard.add(KeyboardButton(text="❌ Отписаться от уведомлении"))
+        keyboard.add(KeyboardButton(text="🙋‍♂️Задать вопрос"))
+        keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
+        await bot.send_message(message.from_user.id, "Вот список доступных команд: ", reply_markup=keyboard)
     return
 
 @dp.message_handler(commands=['disable','enable'])
@@ -218,26 +239,34 @@ async def showUsers(message: types.Message):
 
 @dp.message_handler(text=["✍️ Подписка на уведомления"])
 async def func(message: types.Message):
-    user = functions.getUser(message.from_user.id)
-    if user is None or user[2] == 'None':
-        functions.deleteStudent(message.from_user.id)
-        functions.addStudent(message.from_user.id, message.from_user.username, "None")
-        await message.answer("Напишите свое имя на английском языке(Example: Sugurov Khamza)")
-        functions.setStatus(message.from_user.id, "theName")
+    if functions.userBlocked(message.from_user.id):
+        await message.delete()
+        await bot.send_message(message.from_user.id, "Вы заблокированы на некоторое время!")
     else:
-        await message.answer("Вы уже подписаны!")
+        user = functions.getUser(message.from_user.id)
+        if user is None or user[2] == 'None':
+            functions.deleteStudent(message.from_user.id)
+            functions.addStudent(message.from_user.id, message.from_user.username, "None")
+            await message.answer("Напишите свое имя на английском языке(Example: Sugurov Khamza)")
+            functions.setStatus(message.from_user.id, "theName")
+        else:
+            await message.answer("Вы уже подписаны!")
     return
 
 
 @dp.message_handler(text=["❌ Отписаться от уведомлении"])
 async def unsubscribe(message: types.Message):
-    user = functions.getUser(message.from_user.id)
-    if user is not None:
-        functions.deleteStudent(message.from_user.id)
-        await message.answer("Вы успешно отписались от уведомлений!")
-        await bot.send_message(347821020, message.from_user.username + " отписался от уведомлении!")
+    if functions.userBlocked(message.from_user.id):
+        await message.delete()
+        await bot.send_message(message.from_user.id, "Вы заблокированы на некоторое время!")
     else:
-        await message.answer("Вы не подписаны!")
+        user = functions.getUser(message.from_user.id)
+        if user is not None:
+            functions.deleteStudent(message.from_user.id)
+            await message.answer("Вы успешно отписались от уведомлений!")
+            await bot.send_message(347821020, message.from_user.username + " отписался от уведомлении!")
+        else:
+            await message.answer("Вы не подписаны!")
     return
 
 
@@ -253,10 +282,25 @@ async def admin(message: types.Message):
         keyboard.add(KeyboardButton(text="/users"))
         keyboard.add(KeyboardButton(text="/update"))
         keyboard.add(KeyboardButton(text="/remove_from_bd"))
+        keyboard.add(KeyboardButton(text="/block"))
+        keyboard.add(KeyboardButton(text="/unblock"))
         await message.answer("Привет, Хамзеке, вот доступные функции", reply_markup=keyboard)
     else:
         await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
     return
+
+@dp.message_handler(commands=["block"])
+async def blockUser(message: types.Message):
+    userId = int(message.text.replace("/block ", ""))
+    functions.setStatus(userId, 'Blocked')
+    await message.answer("Пользователь заблокирован!")
+@dp.message_handler(commands=["unblock"])
+async def blockUser(message: types.Message):
+    userId = int(message.text.replace("/unblock ", ""))
+    functions.setStatus(userId, 'None')
+    await message.answer("Пользователь разблокирован!")
+
+
 
 @dp.message_handler(commands=["remove_from_bd"])
 async def removeFromBd(message: types.Message):
@@ -302,14 +346,18 @@ async def cancel(message: types.Message):
 
 @dp.message_handler(commands=["birthday"])
 async def birthday(message: types.Message):
-    userData = functions.getUser(message.from_user.id)
-    if userData[3]!=None:
-        await message.reply(f"Здравствуйте, {userData[2]}, "
-                            f"Вы уже внесли свой день рождения ({userData[3]}) в базу данных! "
-                            f"Для того чтобы изменить ее, напишите @yeapit")
+    if functions.userBlocked(message.from_user.id):
+        await message.delete()
+        await bot.send_message(message.from_user.id, "Вы заблокированы на некоторое время!")
     else:
-        await message.reply("Укажите Вашу дату рождения в формате день/месяц/год (7/3/2000 : 7 марта 2000 года)")
-        functions.setStatus(message.from_user.id, "birthday")
+        userData = functions.getUser(message.from_user.id)
+        if userData[3]!=None:
+            await message.reply(f"Здравствуйте, {userData[2]}, "
+                                f"Вы уже внесли свой день рождения ({userData[3]}) в базу данных! "
+                                f"Для того чтобы изменить ее, напишите @yeapit")
+        else:
+            await message.reply("Укажите Вашу дату рождения в формате день/месяц/год (7/3/2000 : 7 марта 2000 года)")
+            functions.setStatus(message.from_user.id, "birthday")
     return
 
 
@@ -320,138 +368,142 @@ async def getMsg(msg: types.Message):
     global chosenNum
     global gotQuestion
     functions.rollBack()
-    status = functions.getStatus(msg.from_user.id)
-    print(status)
-    if msg.text.lower() == "отмена":
-        await msg.reply("Задача отменена")
-        functions.setStatus(msg.from_user.id, "None")
-        return
-    if status[0] == 'question':
-        functions.addQuestion(msg.from_user.id, msg.text)
-        await bot.send_message(347821020, "Задан новый вопрос, чтобы просмотреть /questions")
-        await msg.reply("Вопрос отправлен, ожидайте ответ!")
-        functions.setStatus(msg.from_user.id, "None")
-        return
+    if functions.userBlocked(msg.from_user.id):
+        await msg.delete()
+        await bot.send_message(msg.from_user.id, "Вы заблокированы на некоторое время!")
+    else:
+        status = functions.getStatus(msg.from_user.id)
+        print(status)
+        if msg.text.lower() == "отмена":
+            await msg.reply("Задача отменена")
+            functions.setStatus(msg.from_user.id, "None")
+            return
+        if status[0] == 'question':
+            functions.addQuestion(msg.from_user.id, msg.text)
+            await bot.send_message(347821020, "Задан новый вопрос, чтобы просмотреть /questions")
+            await msg.reply("Вопрос отправлен, ожидайте ответ!")
+            functions.setStatus(msg.from_user.id, "None")
+            return
 
-    if msg.text == "+":
-        if reactionEnabled:
-            await msg.reply("Принято!")
-            await bot.send_message(347821020, msg.from_user.username + " согласился!")
-        return
-    #if msg.text.lower() == "бот":
-    #    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-    #    keyboard.add(KeyboardButton(text="⌨️Команды"))
-    #    keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
-    #    await msg.reply("Что Вас интересует?", reply_markup=keyboard)
-    #    return
-    if msg.text == "-":
-        if reactionEnabled:
-            await msg.reply("Принято!")
-            await bot.send_message(347821020, msg.from_user.username + " отказался от участия!")
-        return
-    if status[0] == 'theName':
-        name = msg.text
-        try:
-            functions.updateStudent(msg.from_user.id, name)
-            string = msg.from_user.username + " успешно подписался на Ваши уведомления! Его ID: " + str(
-                msg.from_user.id)
-            await bot.send_message(347821020, string)
-            await msg.answer("Вы успешно подписались на уведомления!\n"
-                             "По желанию Вы можете указать Вашу дату рождения /birthday")
-        except:
-            await msg.answer("Что то пошло не так")
+        if msg.text == "+":
+            if reactionEnabled:
+                await msg.reply("Принято!")
+                await bot.send_message(347821020, msg.from_user.username + " согласился!")
+            return
+        #if msg.text.lower() == "бот":
+        #    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+        #    keyboard.add(KeyboardButton(text="⌨️Команды"))
+        #    keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
+        #    await msg.reply("Что Вас интересует?", reply_markup=keyboard)
+        #    return
+        if msg.text == "-":
+            if reactionEnabled:
+                await msg.reply("Принято!")
+                await bot.send_message(347821020, msg.from_user.username + " отказался от участия!")
+            return
+        if status[0] == 'theName':
+            name = msg.text
+            try:
+                functions.updateStudent(msg.from_user.id, name)
+                string = msg.from_user.username + " успешно подписался на Ваши уведомления! Его ID: " + str(
+                    msg.from_user.id)
+                await bot.send_message(347821020, string)
+                await msg.answer("Вы успешно подписались на уведомления!\n"
+                                 "По желанию Вы можете указать Вашу дату рождения /birthday")
+            except:
+                await msg.answer("Что то пошло не так")
 
-        functions.setStatus(msg.from_user.id, "None")
-        return
-    if status[0] == 'birthday':
-        functions.setStatus(msg.from_user.id, "None")
-        dateString = msg.text
-        dateFormatter = "%d/%m/%Y"
-        birthday_date = datetime.strptime(dateString, dateFormatter)
-        functions.setUserBirthday(msg.from_user.id, birthday_date)
-        await bot.send_message(msg.from_user.id, str(birthday_date)+"- Ваша дата рождения! Если неверно ввели - "
-                                                                    "/birthday")
-        return
+            functions.setStatus(msg.from_user.id, "None")
+            return
+        if status[0] == 'birthday':
+            functions.setStatus(msg.from_user.id, "None")
+            dateString = msg.text
+            dateFormatter = "%d/%m/%Y"
+            birthday_date = datetime.strptime(dateString, dateFormatter)
+            functions.setUserBirthday(msg.from_user.id, birthday_date)
+            await bot.send_message(msg.from_user.id, str(birthday_date)+"- Ваша дата рождения! Если неверно ввели - "
+                                                                        "/birthday")
+            return
 
 
-    if msg.chat.type == 'private':
-        if msg.from_user.id == 347821020:
-            if status[0] == 'gotMsg':
-                theText = msg.text
-                functions.setStatus(msg.from_user.id, 'None')
-                s = ""
-                c = 1
-                for u in functions.data:
-                    s += str(c) + ". " + u[1] + "\n"
-                    c += 1
-                await bot.send_message(347821020, "Введите ID людей через запятую с пробелом:\n" + s)
-                functions.setStatus(msg.from_user.id, 'forNA')
-                return
-            if status[0] == 'removeFromBd':
-                ids = msg.text.split(', ')
-                for id in ids:
-                    await msg.reply("Пользователь " + str(functions.getUser(functions.data[int(id) - 1][0])) + " удалён из подписок!")
-                    await bot.send_message(functions.data[int(id) - 1][0],"Вы удалены из подписок!")
-                    functions.deleteUser(functions.data[int(id) - 1][0])
+        if msg.chat.type == 'private':
+            if msg.from_user.id == 347821020:
+                if status[0] == 'gotMsg':
+                    theText = msg.text
+                    functions.setStatus(msg.from_user.id, 'None')
+                    s = ""
+                    c = 1
+                    for u in functions.data:
+                        s += str(c) + ". " + u[1] + "\n"
+                        c += 1
+                    await bot.send_message(347821020, "Введите ID людей через запятую с пробелом:\n" + s)
+                    functions.setStatus(msg.from_user.id, 'forNA')
+                    return
+                if status[0] == 'removeFromBd':
+                    ids = msg.text.split(', ')
+                    for id in ids:
+                        await msg.reply("Пользователь " + str(functions.getUser(functions.data[int(id) - 1][0])) + " удалён из подписок!")
+                        await bot.send_message(functions.data[int(id) - 1][0],"Вы удалены из подписок!")
+                        functions.deleteUser(functions.data[int(id) - 1][0])
 
-                functions.setStatus(msg.from_user.id, "None")
-                return
+                    functions.setStatus(msg.from_user.id, "None")
+                    return
 
-            if status[0] == 'forNA':
-                ids = msg.text.split(', ')
-                for id in ids:
-                    await bot.send_message(functions.data[int(id) - 1][0], theText)
-                functions.setStatus(msg.from_user.id, "None")
-                return
-            if status[0] == 'gotMsgForAll':
-                theText = msg.text
-                functions.setStatus(msg.from_user.id, "None")
-                for user in functions.data:
-                    await bot.send_message(user[0], theText)
-                return
-            if status[0] == 'questionNum':
-                functions.setStatus(msg.from_user.id, "None")
-                gotQuestion = functions.getQuestion(int(msg.text))
-                await msg.answer("Если вы хотите исправить вопрос, то /changeQuestion\n"
-                                 "Если вы хотите ответить на вопрос /sendAnswer")
-                functions.setStatus(msg.from_user.id, "gotQuestionNum")
-                return
-            if status[0] == 'setAnswer':
-                functions.setStatus(msg.from_user.id, "None")
-                functions.setAnswer(gotQuestion[4], msg.text)
-                await msg.reply("Ответ отправлен!")
-                await bot.send_message(gotQuestion[3], "Вы получили ответ на свой вопрос, можете просмотреть их тут "
-                                                       "/answers")
+                if status[0] == 'forNA':
+                    ids = msg.text.split(', ')
+                    for id in ids:
+                        await bot.send_message(functions.data[int(id) - 1][0], theText)
+                    functions.setStatus(msg.from_user.id, "None")
+                    return
+                if status[0] == 'gotMsgForAll':
+                    theText = msg.text
+                    functions.setStatus(msg.from_user.id, "None")
+                    for user in functions.data:
+                        await bot.send_message(user[0], theText)
+                    return
+                if status[0] == 'questionNum':
+                    functions.setStatus(msg.from_user.id, "None")
+                    gotQuestion = functions.getQuestion(int(msg.text))
+                    await msg.answer("Если вы хотите исправить вопрос, то /changeQuestion\n"
+                                     "Если вы хотите ответить на вопрос /sendAnswer")
+                    functions.setStatus(msg.from_user.id, "gotQuestionNum")
+                    return
+                if status[0] == 'setAnswer':
+                    functions.setStatus(msg.from_user.id, "None")
+                    functions.setAnswer(gotQuestion[4], msg.text)
+                    await msg.reply("Ответ отправлен!")
+                    await bot.send_message(gotQuestion[3], "Вы получили ответ на свой вопрос, можете просмотреть их тут "
+                                                           "/answers")
 
-                return
-            if status[0] == 'setNewQuestion':
-                functions.setStatus(msg.from_user.id, "None")
-                functions.setQuestion(gotQuestion[4], msg.text)
-                await msg.reply("Вопрос изменен!")
-                await bot.send_message(gotQuestion[3], "Ваш вопрос был изменен старостой! \n"
-                                                       "Для того чтобы узнать причину, обратитесь к @yeapit")
-                return
-            if status[0] == 'makeInteresting':
-                functions.setStatus(msg.from_user.id, "None")
-                ids = msg.text.split(', ')
-                for id in ids:
-                    functions.setInteresting(id)
-                await msg.reply("Вопросы перемещены во вкладку актуальные!")
-                return
-            if status[0] == 'removeInteresting':
-                functions.setStatus(msg.from_user.id, "None")
-                ids = msg.text.split(', ')
-                for id in ids:
-                    functions.removeInteresting(id)
-                await msg.reply("Вопросы удалены со вкладки актуальных!")
-                return
+                    return
+                if status[0] == 'setNewQuestion':
+                    functions.setStatus(msg.from_user.id, "None")
+                    functions.setQuestion(gotQuestion[4], msg.text)
+                    await msg.reply("Вопрос изменен!")
+                    await bot.send_message(gotQuestion[3], "Ваш вопрос был изменен старостой! \n"
+                                                           "Для того чтобы узнать причину, обратитесь к @yeapit")
+                    return
+                if status[0] == 'makeInteresting':
+                    functions.setStatus(msg.from_user.id, "None")
+                    ids = msg.text.split(', ')
+                    for id in ids:
+                        functions.setInteresting(id)
+                    await msg.reply("Вопросы перемещены во вкладку актуальные!")
+                    return
+                if status[0] == 'removeInteresting':
+                    functions.setStatus(msg.from_user.id, "None")
+                    ids = msg.text.split(', ')
+                    for id in ids:
+                        functions.removeInteresting(id)
+                    await msg.reply("Вопросы удалены со вкладки актуальных!")
+                    return
 
-        keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-        keyboard.add(KeyboardButton(text="✍️ Подписка на уведомления"))
-        keyboard.add(KeyboardButton(text="❌ Отписаться от уведомлении"))
-        keyboard.add(KeyboardButton(text="🙋‍♂️Задать вопрос"))
-        keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
-        await bot.send_message(msg.from_user.id, "Привет, не пиши мне без причины! Вот доступные команды: ", reply_markup=keyboard)
+            keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+            keyboard.add(KeyboardButton(text="✍️ Подписка на уведомления"))
+            keyboard.add(KeyboardButton(text="❌ Отписаться от уведомлении"))
+            keyboard.add(KeyboardButton(text="🙋‍♂️Задать вопрос"))
+            keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
+            await bot.send_message(msg.from_user.id, "Привет, не пиши мне без причины! Вот доступные команды: ", reply_markup=keyboard)
 
     return
 
