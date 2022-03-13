@@ -215,7 +215,8 @@ async def showUsers(message: types.Message):
 
 @dp.message_handler(text=["✍️ Подписка на уведомления"])
 async def func(message: types.Message):
-    await message.answer(str(datetime.date.today()))
+    today = datetime.date.today()
+    await message.answer()
     user = functions.getUser(message.from_user.id)
     if user is None or user[2] == 'None':
         functions.deleteStudent(message.from_user.id)
