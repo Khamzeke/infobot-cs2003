@@ -2,10 +2,8 @@
 # -*- coding: utf-8 -*-
 import asyncio
 from datetime import *
-import aioschedule as schedule
-import time
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup
-
+import aioschedule
 import config
 from aiogram import Bot, Dispatcher, executor, types
 import functions
@@ -301,8 +299,14 @@ async def cancel(message: types.Message):
 
 @dp.message_handler(commands=["birthday"])
 async def birthday(message: types.Message):
-    await message.reply("Укажите Вашу дату рождения в формате день/месяц/год (7/3/2000 : 7 марта 2000 года)")
-    functions.setStatus(message.from_user.id, "birthday")
+    userData = functions.getUser(message.from_user.id)
+    if userData[3]!=None:
+        await message.reply(f"Здравствуйте, {userData[2]}, "
+                            f"Вы уже внесли свой день рождения ({userData[3]}) в базу данных! "
+                            f"Для того чтобы изменить ее, напишите @yeapit")
+    else:
+        await message.reply("Укажите Вашу дату рождения в формате день/месяц/год (7/3/2000 : 7 марта 2000 года)")
+        functions.setStatus(message.from_user.id, "birthday")
     return
 
 
@@ -448,12 +452,34 @@ async def getMsg(msg: types.Message):
 
     return
 
-async def notification():
-    await bot.send_message(347821020, "hello")
 
-loop = asyncio.get_event_loop()
+async def birthdayNotification():
+    global users
+    while True:
+        await aioschedule.run_pending()
+        await asyncio.sleep(1)
+        if datetime.now().hour == 0 and datetime.now().minute == 0 and datetime.now().second==0:
+            for userId, name in users.items():
+                if functions.getBirthdayUsers(userId)<=5 and functions.getBirthdayUsers(userId)>=1 :
+                    for u in users.keys():
+                        if u!=userId:
+                            await bot.send_message(u, f"У {name} день рождения через неделю ({(functions.getUser(userId))[3]}). "
+                                                         f"В связи с этим событием открыт сбор на каспи 87760156299 (1к+)")
+                elif functions.getBirthdayUsers(userId)==7:
+                    for u in users.keys():
+                        if u!=userId:
+                            await bot.send_message(u, f"У {name} день рождения через неделю ({(functions.getUser(userId))[3]}). "
+                                                         f"В связи с этим событием открываю сбор на каспи 87760156299 (1к+)")
+                elif functions.getBirthdayUsers(userId)==30 or functions.getBirthdayUsers(userId)==31:
+                    for u in users.keys():
+                        if u!=userId:
+                            await bot.send_message(u, f"У {name} день рождения через месяц ({(functions.getUser(userId))[3]}). "
+                                                         f"В связи с этим событием прошу Вас отложить как минимум 1к на следующий месяц!")
+
+
+async def on_startup(_):
+    asyncio.create_task(birthdayNotification())
 
 
 if __name__ == '__main__':
-    schedule.every(5).seconds.do(notification())
-    executor.start_polling(dp, skip_updates=True)
+    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)

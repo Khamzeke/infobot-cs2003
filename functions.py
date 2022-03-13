@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import datetime
+
 import psycopg2
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
@@ -49,7 +51,7 @@ def setStatus(id, status):
 
 
 def getUser(id):
-    sql = "SELECT id, username, name FROM public.students where id = " + str(id)
+    sql = "SELECT id, username, name, birthday FROM public.students where id = " + str(id)
     cursor = connection.cursor()
     cursor.execute(sql)
     user = cursor.fetchone()
@@ -71,7 +73,6 @@ def addStudent(id, username, name):
 
 def updateStudent(id, name):
     new_sql = f"UPDATE public.students SET name='{name}' WHERE id={id};"
-    print(new_sql)
     cursor.execute(new_sql)
     connection.commit()
 
@@ -153,3 +154,11 @@ def setUserBirthday(user_id, date):
     sql = f"UPDATE public.students SET birthday='{date}' WHERE id={user_id};"
     cursor.execute(sql)
     connection.commit()
+
+
+def getBirthdayUsers(id):
+    today = datetime.date.today()
+    user = getUser(id)
+    newDate = datetime.date(today.year, user[3].month, user[3].day)
+    print((newDate-today).days)
+    return (newDate-today).days
