@@ -3,7 +3,6 @@
 import datetime
 
 import psycopg2
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 import config
 
@@ -167,3 +166,23 @@ def userBlocked(id):
     if getStatus(id)[0] == "Blocked":
         return True
     return False
+
+def setBirthdayStatus(userId, donaterId, sum):
+    sql = f"INSERT INTO public.birthdaytable(student_id, donater_id, donat_sum)VALUES ({userId}, {donaterId}, {sum});"
+    cursor.execute(sql)
+    connection.commit()
+
+def updateBirthdayStatus(donaterId, sum):
+    sql = f"UPDATE public.birthdaytable SET donat_sum={sum} WHERE donater_id={donaterId};"
+    cursor.execute(sql)
+    connection.commit()
+
+def clearBirthdayStatuses():
+    sql = "DELETE FROM public.birthdaytable	WHERE donat_sum=-1"
+    cursor.execute(sql)
+    connection.commit()
+
+def cashSent(donaterId, userId):
+    sql = f"SELECT * FROM public.birthdaytable where donater_id={donaterId} and student_id={userId}"
+    cursor.execute(sql)
+    return cursor.fetchone()

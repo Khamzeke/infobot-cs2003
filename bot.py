@@ -209,7 +209,8 @@ async def help(message: types.Message):
         await bot.send_message(message.from_user.id, "Вот список доступных команд: ", reply_markup=keyboard)
     return
 
-@dp.message_handler(commands=['disable','enable'])
+
+@dp.message_handler(commands=['disable', 'enable'])
 async def switchReaction(message: types.Message):
     global reactionEnabled
     if message.from_user.id == 347821020:
@@ -289,11 +290,14 @@ async def admin(message: types.Message):
         await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
     return
 
+
 @dp.message_handler(commands=["block"])
 async def blockUser(message: types.Message):
     userId = int(message.text.replace("/block ", ""))
     functions.setStatus(userId, 'Blocked')
     await message.answer("Пользователь заблокирован!")
+
+
 @dp.message_handler(commands=["unblock"])
 async def blockUser(message: types.Message):
     userId = int(message.text.replace("/unblock ", ""))
@@ -301,11 +305,10 @@ async def blockUser(message: types.Message):
     await message.answer("Пользователь разблокирован!")
 
 
-
 @dp.message_handler(commands=["remove_from_bd"])
 async def removeFromBd(message: types.Message):
     if message.from_user.id == 347821020 and message.chat.type == 'private':
-        functions.setStatus(347821020,"removeFromBd")
+        functions.setStatus(347821020, "removeFromBd")
         s = ""
         c = 1
         for u in functions.data:
@@ -344,6 +347,7 @@ async def cancel(message: types.Message):
     await message.reply("Задача отменена")
     return
 
+
 @dp.message_handler(commands=["birthday"])
 async def birthday(message: types.Message):
     if functions.userBlocked(message.from_user.id):
@@ -351,7 +355,7 @@ async def birthday(message: types.Message):
         await bot.send_message(message.from_user.id, "Вы заблокированы на некоторое время!")
     else:
         userData = functions.getUser(message.from_user.id)
-        if userData[3]!=None:
+        if userData[3] != None:
             await message.reply(f"Здравствуйте, {userData[2]}, "
                                 f"Вы уже внесли свой день рождения ({userData[3]}) в базу данных! "
                                 f"Для того чтобы изменить ее, напишите @yeapit")
@@ -359,6 +363,34 @@ async def birthday(message: types.Message):
             await message.reply("Укажите Вашу дату рождения в формате день/месяц/год (7/3/2000 : 7 марта 2000 года)")
             functions.setStatus(message.from_user.id, "birthday")
     return
+
+
+@dp.callback_query_handler(lambda c: c.data and c.data.startswith('cash'))
+async def cashSent(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    donater_id = callback_query.from_user.id
+    if callback_query.data.startswith('cashSent'):
+        userId = callback_query.data.replace("cashSent", "")
+        print(userId)
+        await bot.send_message(callback_query.from_user.id, "Сколько Вы скинули?")
+        functions.setBirthdayStatus(int(userId), int(donater_id), -1)
+        functions.setStatus(callback_query.from_user.id, "cashSent")
+    elif callback_query.data.startswith('cashWontSent'):
+        userId = callback_query.data.replace("cashWontSent", "")
+        await bot.send_message(callback_query.from_user.id, "Напишите пожалуйста причину, если хотите.")
+        functions.setBirthdayStatus(int(userId), int(donater_id), 0)
+        functions.setStatus(callback_query.from_user.id, "cashWontSent")
+
+    asyncio.create_task(wait(120, callback_query.from_user.id))
+
+
+async def wait(seconds, userId):
+    await asyncio.sleep(seconds)
+    status = functions.getStatus(userId)
+    if status[0] == "cashWontSent" or status[0] == "cashSent":
+        await bot.send_message(userId, "Истекло время для ответа")
+        functions.setStatus(userId, "None")
+    functions.clearBirthdayStatuses()
 
 
 @dp.message_handler()
@@ -384,18 +416,17 @@ async def getMsg(msg: types.Message):
             await msg.reply("Вопрос отправлен, ожидайте ответ!")
             functions.setStatus(msg.from_user.id, "None")
             return
-
         if msg.text == "+":
             if reactionEnabled:
                 await msg.reply("Принято!")
                 await bot.send_message(347821020, msg.from_user.username + " согласился!")
             return
-        #if msg.text.lower() == "бот":
-        #    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-        #    keyboard.add(KeyboardButton(text="⌨️Команды"))
-        #    keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
-        #    await msg.reply("Что Вас интересует?", reply_markup=keyboard)
-        #    return
+        if msg.text.lower() == "бот" and msg.from_user.id == 347821020:
+            keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+            keyboard.add(KeyboardButton(text="⌨️Команды"))
+            keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
+            await msg.reply("Что Вас интересует?", reply_markup=keyboard)
+            return
         if msg.text == "-":
             if reactionEnabled:
                 await msg.reply("Принято!")
@@ -421,11 +452,9 @@ async def getMsg(msg: types.Message):
             dateFormatter = "%d/%m/%Y"
             birthday_date = datetime.strptime(dateString, dateFormatter)
             functions.setUserBirthday(msg.from_user.id, birthday_date)
-            await bot.send_message(msg.from_user.id, str(birthday_date)+"- Ваша дата рождения! Если неверно ввели - "
-                                                                        "/birthday")
+            await bot.send_message(msg.from_user.id, str(birthday_date) + "- Ваша дата рождения! Если неверно ввели - "
+                                                                          "/birthday")
             return
-
-
         if msg.chat.type == 'private':
             if msg.from_user.id == 347821020:
                 if status[0] == 'gotMsg':
@@ -442,13 +471,13 @@ async def getMsg(msg: types.Message):
                 if status[0] == 'removeFromBd':
                     ids = msg.text.split(', ')
                     for id in ids:
-                        await msg.reply("Пользователь " + str(functions.getUser(functions.data[int(id) - 1][0])) + " удалён из подписок!")
-                        await bot.send_message(functions.data[int(id) - 1][0],"Вы удалены из подписок!")
+                        await msg.reply("Пользователь " + str(
+                            functions.getUser(functions.data[int(id) - 1][0])) + " удалён из подписок!")
+                        await bot.send_message(functions.data[int(id) - 1][0], "Вы удалены из подписок!")
                         functions.deleteUser(functions.data[int(id) - 1][0])
 
                     functions.setStatus(msg.from_user.id, "None")
                     return
-
                 if status[0] == 'forNA':
                     ids = msg.text.split(', ')
                     for id in ids:
@@ -472,8 +501,9 @@ async def getMsg(msg: types.Message):
                     functions.setStatus(msg.from_user.id, "None")
                     functions.setAnswer(gotQuestion[4], msg.text)
                     await msg.reply("Ответ отправлен!")
-                    await bot.send_message(gotQuestion[3], "Вы получили ответ на свой вопрос, можете просмотреть их тут "
-                                                           "/answers")
+                    await bot.send_message(gotQuestion[3],
+                                           "Вы получили ответ на свой вопрос, можете просмотреть их тут "
+                                           "/answers")
 
                     return
                 if status[0] == 'setNewQuestion':
@@ -497,13 +527,31 @@ async def getMsg(msg: types.Message):
                         functions.removeInteresting(id)
                     await msg.reply("Вопросы удалены со вкладки актуальных!")
                     return
+            if status[0] == 'cashSent':
+                if msg.text.isdigit():
+                    if int(msg.text) < 1000:
+                        await msg.reply("Нужно скинуть как минимум 1000")
+                    else:
+                        functions.updateBirthdayStatus(msg.from_user.id, int(msg.text))
+                        functions.setStatus(msg.from_user.id, "None")
+                        await bot.send_message(347821020, f"{msg.from_user.username} отправил {msg.text}")
+                        await msg.reply("Отлично, Вас больше не будут беспокоить уведомления!")
+                else:
+                    await msg.reply("Введите сумму либо отмените ввод нажатием на /cancel")
+                return
+            if status[0] == 'cashWontSent':
+                await bot.send_message(347821020, f"{msg.from_user.username} не закинет, пишет: {msg.text}")
+                await msg.reply("Хорошо, Вас больше не будут беспокоить уведомления :(")
+                functions.setStatus(msg.from_user.id, "None")
+                return
 
             keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
             keyboard.add(KeyboardButton(text="✍️ Подписка на уведомления"))
             keyboard.add(KeyboardButton(text="❌ Отписаться от уведомлении"))
             keyboard.add(KeyboardButton(text="🙋‍♂️Задать вопрос"))
             keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
-            await bot.send_message(msg.from_user.id, "Привет, не пиши мне без причины! Вот доступные команды: ", reply_markup=keyboard)
+            await bot.send_message(msg.from_user.id, "Привет, не пиши мне без причины! Вот доступные команды: ",
+                                   reply_markup=keyboard)
 
     return
 
@@ -511,28 +559,36 @@ async def getMsg(msg: types.Message):
 async def birthdayNotification():
     global users
     while True:
-        button1 = InlineKeyboardButton('Закинул', callback_data='cashSent')
-        button2 = InlineKeyboardButton('Я не скину', callback_data='cashWontSent')
-        kb = InlineKeyboardMarkup(resize_keyboard=True).add(button1,  button2)
         await aioschedule.run_pending()
         await asyncio.sleep(1)
-        if datetime.now().hour == 18 and datetime.now().minute == 0 and datetime.now().second==0:
+        if datetime.now().hour == 18 and datetime.now().minute == 0 and datetime.now().second == 0:
             for userId, name in users.items():
-                if functions.getBirthdayUsers(userId)<=5 and functions.getBirthdayUsers(userId)>=1 :
+                button1 = InlineKeyboardButton('Скинул', callback_data='cashSent' + str(userId))
+                button2 = InlineKeyboardButton('Я не скину', callback_data='cashWontSent' + str(userId))
+                kb = InlineKeyboardMarkup(resize_keyboard=True).add(button1, button2)
+                if functions.getBirthdayUsers(userId) <= 5 and functions.getBirthdayUsers(userId) >= 1:
                     for u in users.keys():
-                        if u!=userId:
-                            await bot.send_message(u, f"У {name} день рождения через неделю ({(functions.getUser(userId))[3]}). "
-                                                         f"В связи с этим событием открыт сбор на каспи 87760156299 (1к+)", reply_markup=kb)
-                elif functions.getBirthdayUsers(userId)==7:
+                        if u != userId and functions.cashSent(u, userId) is None:
+                            await bot.send_message(u,
+                                                   f"У {name} день рождения менее чем через неделю ({(functions.getUser(userId))[3]}). "
+                                                   f"В связи с этим событием открыт сбор на каспи 87760156299 (1к+)",
+                                                   reply_markup=kb)
+                elif functions.getBirthdayUsers(userId) == 7:
                     for u in users.keys():
-                        if u!=userId:
-                            await bot.send_message(u, f"У {name} день рождения через неделю ({(functions.getUser(userId))[3]}). "
-                                                         f"В связи с этим событием открываю сбор на каспи 87760156299 (1к+)", reply_markup=kb)
-                elif functions.getBirthdayUsers(userId)==30 or functions.getBirthdayUsers(userId)==31:
+                        if u != userId and functions.cashSent(u, userId) is None:
+                            await bot.send_message(u,
+                                                   f"У {name} день рождения через неделю ({(functions.getUser(userId))[3]}). "
+                                                   f"В связи с этим событием открываю сбор на каспи 87760156299 (1к+)",
+                                                   reply_markup=kb)
+                elif functions.getBirthdayUsers(userId) == 30 or functions.getBirthdayUsers(userId) == 31:
                     for u in users.keys():
-                        if u!=userId:
-                            await bot.send_message(u, f"У {name} день рождения через месяц ({(functions.getUser(userId))[3]}). "
-                                                         f"В связи с этим событием прошу Вас отложить как минимум 1к на следующий месяц!", reply_markup=kb)
+                        if u != userId and functions.cashSent(u, userId) is None:
+                            await bot.send_message(u,
+                                                   f"{u} У {name} день рождения через месяц ({(functions.getUser(userId))[3]}). "
+                                                   f"В связи с этим событием прошу Вас отложить как минимум 1к на следующий месяц!",
+                                                   reply_markup=kb)
+                elif functions.getBirthdayUsers(userId) == 0:
+                    await bot.send_message(userId, "С днём рождения!")
 
 
 async def on_startup(_):
