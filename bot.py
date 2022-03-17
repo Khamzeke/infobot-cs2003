@@ -566,7 +566,7 @@ async def birthdayNotification():
                 button1 = InlineKeyboardButton('Скинул', callback_data='cashSent' + str(userId))
                 button2 = InlineKeyboardButton('Я не скину', callback_data='cashWontSent' + str(userId))
                 kb = InlineKeyboardMarkup(resize_keyboard=True).add(button1, button2)
-                if functions.getBirthdayUsers(userId) <= 5 and functions.getBirthdayUsers(userId) >= 1:
+                if 5 >= functions.getBirthdayUsers(userId) >= 1:
                     for u in users.keys():
                         if u != userId and functions.cashSent(u, userId) is None:
                             await bot.send_message(u,
@@ -584,8 +584,9 @@ async def birthdayNotification():
                     for u in users.keys():
                         if u != userId and functions.cashSent(u, userId) is None:
                             await bot.send_message(u,
-                                                   f"{u} У {name} день рождения через месяц ({(functions.getUser(userId))[3]}). "
-                                                   f"В связи с этим событием прошу Вас отложить как минимум 1к на следующий месяц!",
+                                                   f"У {name} день рождения через месяц ({(functions.getUser(userId))[3]}). "
+                                                   f"В связи с этим событием прошу Вас отложить как минимум 1к на "
+                                                   f"следующий месяц!",
                                                    reply_markup=kb)
                 elif functions.getBirthdayUsers(userId) == 0:
                     await bot.send_message(userId, "С днём рождения!")
