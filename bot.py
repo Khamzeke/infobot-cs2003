@@ -511,6 +511,9 @@ async def getMsg(msg: types.Message):
 async def birthdayNotification():
     global users
     while True:
+        button1 = InlineKeyboardButton('Закинул', callback_data='cashSent')
+        button2 = InlineKeyboardButton('Я не скину', callback_data='cashWontSent')
+        kb = InlineKeyboardMarkup(resize_keyboard=True).add(button1,  button2)
         await aioschedule.run_pending()
         await asyncio.sleep(1)
         if datetime.now().hour == 18 and datetime.now().minute == 0 and datetime.now().second==0:
@@ -519,17 +522,17 @@ async def birthdayNotification():
                     for u in users.keys():
                         if u!=userId:
                             await bot.send_message(u, f"У {name} день рождения через неделю ({(functions.getUser(userId))[3]}). "
-                                                         f"В связи с этим событием открыт сбор на каспи 87760156299 (1к+)")
+                                                         f"В связи с этим событием открыт сбор на каспи 87760156299 (1к+)", reply_markup=kb)
                 elif functions.getBirthdayUsers(userId)==7:
                     for u in users.keys():
                         if u!=userId:
                             await bot.send_message(u, f"У {name} день рождения через неделю ({(functions.getUser(userId))[3]}). "
-                                                         f"В связи с этим событием открываю сбор на каспи 87760156299 (1к+)")
+                                                         f"В связи с этим событием открываю сбор на каспи 87760156299 (1к+)", reply_markup=kb)
                 elif functions.getBirthdayUsers(userId)==30 or functions.getBirthdayUsers(userId)==31:
                     for u in users.keys():
                         if u!=userId:
                             await bot.send_message(u, f"У {name} день рождения через месяц ({(functions.getUser(userId))[3]}). "
-                                                         f"В связи с этим событием прошу Вас отложить как минимум 1к на следующий месяц!")
+                                                         f"В связи с этим событием прошу Вас отложить как минимум 1к на следующий месяц!", reply_markup=kb)
 
 
 async def on_startup(_):
