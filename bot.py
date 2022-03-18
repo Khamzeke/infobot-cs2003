@@ -401,7 +401,7 @@ async def getMsg(msg: types.Message):
     global gotQuestion
     functions.rollBack()
     status = functions.getStatus(msg.from_user.id)
-    if status is None:
+    if status is None and msg.chat.type == 'private':
         await msg.reply("Вы должны подписаться на бота, прежде чем использовать его функции.")
         return
     if functions.userBlocked(msg.from_user.id):
