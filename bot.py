@@ -400,11 +400,14 @@ async def getMsg(msg: types.Message):
     global chosenNum
     global gotQuestion
     functions.rollBack()
+    status = functions.getStatus(msg.from_user.id)
+    if status is None:
+        await msg.reply("Вы должны подписаться на бота, прежде чем использовать его функции.")
+        return
     if functions.userBlocked(msg.from_user.id):
         await msg.delete()
         await bot.send_message(msg.from_user.id, "Вы заблокированы на некоторое время!")
     else:
-        status = functions.getStatus(msg.from_user.id)
         print(status)
         if msg.text.lower() == "отмена":
             await msg.reply("Задача отменена")
