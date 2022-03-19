@@ -293,16 +293,18 @@ async def admin(message: types.Message):
 
 @dp.message_handler(commands=["block"])
 async def blockUser(message: types.Message):
-    userId = int(message.text.replace("/block ", ""))
-    functions.setStatus(userId, 'Blocked')
-    await message.answer("Пользователь заблокирован!")
+    if message.from_user.id == 347821020:
+        userId = int(message.text.replace("/block ", ""))
+        functions.setStatus(userId, 'Blocked')
+        await message.answer("Пользователь заблокирован!")
 
 
 @dp.message_handler(commands=["unblock"])
 async def blockUser(message: types.Message):
-    userId = int(message.text.replace("/unblock ", ""))
-    functions.setStatus(userId, 'None')
-    await message.answer("Пользователь разблокирован!")
+    if message.from_user.id == 347821020:
+        userId = int(message.text.replace("/unblock ", ""))
+        functions.setStatus(userId, 'None')
+        await message.answer("Пользователь разблокирован!")
 
 
 @dp.message_handler(commands=["remove_from_bd"])
