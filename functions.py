@@ -188,3 +188,8 @@ def cashSent(donaterId, userId):
     sql = f"SELECT * FROM public.birthdaytable where donater_id={donaterId} and student_id={userId}"
     cursor.execute(sql)
     return cursor.fetchone()
+
+def deleteQuestion(question_id):
+    sql = f"DELETE FROM public.questions where question_id={question_id}"
+    cursor.execute(sql)
+    connection.commit()
