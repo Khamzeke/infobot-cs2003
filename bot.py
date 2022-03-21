@@ -373,8 +373,13 @@ async def forAllMsg(message: types.Message):
 @dp.message_handler(text=['Удалить вопросы'])
 async def delQuestions(message: types.Message):
     if message.from_user.id == 347821020 and message.chat.type == 'private':
-        await bot.send_message(347821020, f"Все вопросы: \n{functions.getQuestions()}\nВведите id вопросов, которые хотите удалить"
-                                          f"через запятую (пример: 1, 2, 3, 4...")
+        questions = functions.getQuestions()
+        s = ""
+        for question in questions:
+            s += str(question[4]) + ". " + question[0] + " :" + question[1] + "\n"
+        await message.answer(s)
+        await bot.send_message(347821020, f"Все вопросы: \n{s}\nВведите id вопросов, которые хотите удалить"
+                                          f"через запятую (пример: 1, 2, 3, 4...)")
         functions.setStatus(message.from_user.id, "delQuestions")
     else:
         await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
