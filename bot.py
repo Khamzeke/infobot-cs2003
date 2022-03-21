@@ -377,8 +377,7 @@ async def delQuestions(message: types.Message):
         s = ""
         for question in questions:
             s += str(question[4]) + ". " + question[0] + " :" + question[1] + "\n"
-        await message.answer(s)
-        await bot.send_message(347821020, f"Все вопросы: \n{s}\nВведите id вопросов, которые хотите удалить"
+        await bot.send_message(347821020, f"Все вопросы: \n{s}\nВведите id вопросов, которые хотите удалить "
                                           f"через запятую (пример: 1, 2, 3, 4...)")
         functions.setStatus(message.from_user.id, "delQuestions")
     else:
