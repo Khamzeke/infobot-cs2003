@@ -58,14 +58,18 @@ def getUser(id):
 
 
 def deleteStudent(id):
-    new_sql = "DELETE FROM public.students WHERE id = " + str(id) + ";"
+    sql = f"DELETE FROM public.birthdaytable where student_id={id} or donater_id={id}"
+    cursor.execute(sql)
+    connection.commit()
+    new_sql = f"DELETE FROM public.students WHERE id = {id};"
     cursor.execute(new_sql)
     connection.commit()
 
 
 def addStudent(id, username, name):
-    new_sql = "INSERT INTO public.students(id, username, name) VALUES (" + str(id) + ", " \
-                                                                                     "'" + username + "', '" + name + "');"
+    if username is None:
+        username = "None"
+    new_sql = f"INSERT INTO public.students(id, username, name) VALUES ({id}, '{username}', '{name}');"
     cursor.execute(new_sql)
     connection.commit()
 

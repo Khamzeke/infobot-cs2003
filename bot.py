@@ -601,7 +601,7 @@ async def birthdayNotification():
                     for u in users.keys():
                         if u != userId and functions.cashSent(u, userId) is None:
                             await bot.send_message(u,
-                                                   f"У {name} день рождения менее чем через неделю ({(functions.getUser(userId))[3]}). "
+                                                   f"У {name} день рождения через несколько дней! ({(functions.getUser(userId))[3]}). "
                                                    f"В связи с этим событием открыт сбор на каспи 87760156299 (1к+)",
                                                    reply_markup=kb)
                 elif functions.getBirthdayUsers(userId) == 7:
