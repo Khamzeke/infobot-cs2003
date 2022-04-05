@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import asyncio
+import time
 from datetime import *
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup
 import aioschedule
@@ -183,6 +184,7 @@ async def admin(message: types.Message):
         keyboard.add(KeyboardButton(text="Поместить в актуальные"))
         keyboard.add(KeyboardButton(text="Удалить из актуальных"))
         keyboard.add(KeyboardButton(text="Удалить вопросы"))
+        keyboard.add(KeyboardButton(text="Управление курсами"))
         keyboard.add(KeyboardButton(text="/users"))
         keyboard.add(KeyboardButton(text="/update"))
         keyboard.add(KeyboardButton(text="/remove_from_bd"))
@@ -212,7 +214,7 @@ async def switchReaction(message: types.Message):
 
 @dp.message_handler(commands=['users'])
 async def showUsers(message: types.Message):
-    if message.from_user.id == 347821020 or message.chat.type == 'private':
+    if message.from_user.id == 347821020 and message.chat.type == 'private':
         t = ""
         for id in users:
             t += str(id) + " " + users[id] + "\n"
@@ -229,6 +231,20 @@ async def questions(message: types.Message):
     else:
         await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
     return
+
+@dp.message_handler(text=['Управление курсами'])
+async def courses(message: types.Message):
+    if message.from_user.id == config.ADMIN:
+        await message.answer("Команда для добавления /ac courseName,courseId")
+        text, list = functions.getCoursesMenu()
+        await message.answer(text)
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True).add(*list)
+        if text != "Нет зарегистрированых курсов!":
+            await message.answer("Введите ID курса",reply_markup=keyboard)
+            functions.setStatus(message.from_user.id, "Courses")
+    else:
+        await message.answer("Нет доступа!")
+
 
 
 @dp.message_handler(text=['Поместить в актуальные'])
@@ -384,7 +400,15 @@ async def delQuestions(message: types.Message):
         await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
     return
 
-
+@dp.message_handler(commands=['ac'])
+async def addCourse(message: types.Message):
+    if message.from_user.id == config.ADMIN:
+        functions.setStatus(config.ADMIN, 'None')
+        data = message.text.replace("/ac ","")
+        course = data.split(",")
+        functions.addCourse(course[0], course[1])
+        await message.answer(f"Курс {course[1]}: {course[0]} успешно добавлен!")
+    return
 
 @dp.callback_query_handler(lambda c: c.data and c.data.startswith('cash'))
 async def cashSent(callback_query: types.CallbackQuery):
@@ -558,6 +582,18 @@ async def getMsg(msg: types.Message):
                         functions.deleteQuestion(id)
                     await msg.reply("Вопросы удалены!")
                     return
+                if status[0] == 'Courses':
+                    if msg.text.isdigit():
+                        id = int(msg.text)
+                        course = functions.findCourse(id)
+                        if not course:
+                            await msg.answer("Курс не найден!")
+                        else:
+                            await msg.answer(course)
+                    else:
+                        functions.setStatus(config.ADMIN, 'None')
+                        await msg.answer("Некорректное значение!")
+                    return
             if status[0] == 'cashSent':
                 if msg.text.isdigit():
                     if int(msg.text) < 1000:
@@ -621,7 +657,6 @@ async def birthdayNotification():
                                                    reply_markup=kb)
                 elif functions.getBirthdayUsers(userId) == 0:
                     await bot.send_message(userId, "С днём рождения!")
-
 
 async def on_startup(_):
     asyncio.create_task(birthdayNotification())

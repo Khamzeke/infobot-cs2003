@@ -197,3 +197,28 @@ def deleteQuestion(question_id):
     sql = f"DELETE FROM public.questions where question_id={question_id}"
     cursor.execute(sql)
     connection.commit()
+
+def getCoursesMenu():
+    sql = f"SELECT * FROM public.courses"
+    cursor.execute(sql)
+    courses = cursor.fetchall()
+    text = ""
+    ls = []
+    for course in courses:
+        text+=str(course[0])+". " + course[1]+"\n"
+        ls.append(str(course[0]))
+    if text == "":
+        text="Нет зарегистрированых курсов!"
+    return text, ls
+
+def findCourse(id):
+    sql = f"SELECT * FROM public.courses where id = {id}"
+    cursor.execute(sql)
+    course = cursor.fetchall()
+    return course
+
+def addCourse(name, id):
+    sql = f"INSERT INTO public.courses(id, name)VALUES ({int(id)}, '{name}');"
+    cursor.execute(sql)
+    connection.commit()
+
