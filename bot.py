@@ -628,7 +628,7 @@ async def birthdayNotification():
     while True:
         await aioschedule.run_pending()
         await asyncio.sleep(1)
-        if datetime.now().hour == 18 and datetime.now().minute == 0 and datetime.now().second == 0:
+        if datetime.now().hour == 18 and datetime.now().minute == 0:
             for userId, name in users.items():
                 button1 = InlineKeyboardButton('Скинул', callback_data='cashSent' + str(userId))
                 button2 = InlineKeyboardButton('Я не скину', callback_data='cashWontSent' + str(userId))
@@ -657,6 +657,7 @@ async def birthdayNotification():
                                                    reply_markup=kb)
                 elif functions.getBirthdayUsers(userId) == 0:
                     await bot.send_message(userId, "С днём рождения!")
+            await asyncio.sleep(60)
 
 async def on_startup(_):
     asyncio.create_task(birthdayNotification())
