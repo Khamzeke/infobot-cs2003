@@ -222,3 +222,37 @@ def addCourse(name, id):
     cursor.execute(sql)
     connection.commit()
 
+def getActiveUsers():
+    sql = f"SELECT name, id, emoji FROM public.students where active={True}"
+    cursor.execute(sql)
+    return cursor.fetchall()
+
+def makeActiveAll():
+    sql = f"UPDATE public.students SET active='true'"
+    cursor.execute(sql)
+    connection.commit()
+
+def setEmoji(emoji,id):
+    sql = f"UPDATE public.students SET emoji='{emoji}' where id={id}"
+    cursor.execute(sql)
+    connection.commit()
+
+def setInactive(id):
+    sql = f"UPDATE public.students SET active='false' where id ={id}"
+    cursor.execute(sql)
+    connection.commit()
+
+def setActive(id):
+    sql = f"UPDATE public.students SET active='true' where id={id}"
+    cursor.execute(sql)
+    connection.commit()
+
+def getStatusAll():
+    sql = f"SELECT command, status FROM public.settings where command='all'"
+    cursor.execute(sql)
+    return cursor.fetchone()
+
+def setSetting(command, status):
+    sql = f"UPDATE public.settings SET status='{status}' WHERE command='{command}'"
+    cursor.execute(sql)
+    connection.commit()

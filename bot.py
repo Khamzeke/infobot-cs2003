@@ -43,12 +43,46 @@ async def start(message: types.Message):
 
 @dp.message_handler(commands=["all"])
 async def all(message: types.Message):
-    await message.answer(text="<b>Hello<b>",parse_mode='HTML')
+    if message.chat.type != 'private':
+        if functions.getStatusAll()[1] == 'active':
+            active_users = functions.getActiveUsers()
+            text = ""
+            num = len(active_users)
+            for u in range(len(active_users)):
+                if active_users[u][2] == "None":
+                    text+=f'<a href="tg://user?id={active_users[u][1]}">{active_users[u][0]}</a> '
+                else:
+                    text+=f'<a href="tg://user?id={active_users[u][1]}">{active_users[u][2]}</a> '
+                if (u+1)%4==0 or num==u+1:
+                    await message.answer(text=text, parse_mode='HTML')
+                    text=""
+            functions.setSetting('all','None')
+            await asyncio.sleep(300)
+            functions.setSetting('all','active')
+        else:
+            await bot.send_message(message.from_user.id,"Функция была применена недавно!")
+
+@dp.message_handler(commands=["setme"])
+async def setEmoji(message: types.Message):
+    if message.chat.type != 'private':
+        emoji = message.text.replace("/setme ",'')
+        if emoji == "/setme":
+            await message.reply("Эмодзи не найден!")
+        else:
+            functions.setEmoji(emoji, message.from_user.id)
+            await message.reply("Эмодзи установлен!")
+
+
+@dp.message_handler(commands=["unreg"])
+async def unreg(message: types.Message):
+    if message.chat.type != 'private':
+        functions.setInactive(message.from_user.id)
+        await message.reply("Вас сегодня не потревожат если Вы ничего не напишите!")
+
 
 @dp.message_handler(commands=["cancel"])
 async def cancel(message: types.Message):
     functions.setStatus(message.from_user.id, "None")
-
     await message.reply("Задача отменена")
     return
 
@@ -451,6 +485,7 @@ async def getMsg(msg: types.Message):
     global gotQuestion
     functions.rollBack()
     status = functions.getStatus(msg.from_user.id)
+    functions.setActive(msg.from_user.id)
     if status is None and msg.chat.type == 'private':
         await msg.reply("Вы должны подписаться на бота, прежде чем использовать его функции.")
         return
@@ -458,7 +493,6 @@ async def getMsg(msg: types.Message):
         await msg.delete()
         await bot.send_message(msg.from_user.id, "Вы заблокированы на некоторое время!")
     else:
-        print(status)
         if msg.text.lower() == "отмена":
             await msg.reply("Задача отменена")
             functions.setStatus(msg.from_user.id, "None")
@@ -662,6 +696,8 @@ async def birthdayNotification():
                                                    reply_markup=kb)
                 elif functions.getBirthdayUsers(userId) == 0:
                     await bot.send_message(userId, "С днём рождения!")
+            functions.makeActiveAll()
+            functions.setInactive(1582515158)
             await asyncio.sleep(60)
 
 async def on_startup(_):
