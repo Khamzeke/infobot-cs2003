@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import asyncio
+import html
 import time
 from datetime import *
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup
@@ -39,6 +40,10 @@ async def start(message: types.Message):
     return
 
 
+
+@dp.message_handler(commands=["all"])
+async def all(message: types.Message):
+    await message.answer(text="<b>Hello<b>",parse_mode='HTML')
 
 @dp.message_handler(commands=["cancel"])
 async def cancel(message: types.Message):
