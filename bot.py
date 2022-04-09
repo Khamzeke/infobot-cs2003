@@ -40,10 +40,11 @@ async def start(message: types.Message):
 
 @dp.message_handler(commands=["all"])
 async def all(message: types.Message):
-    if message.chat.type != 'private':
+    if message.chat.type != 'private' and not functions.userBlocked(message.from_user.id):
         if functions.getStatusAll()[1] == 'active':
             active_users = functions.getActiveUsers()
-            text = ""
+            msg = message.text.replace("/all",'')
+            text = msg + '\n'
             num = len(active_users)
             for u in range(len(active_users)):
                 if active_users[u][2] == "None":
@@ -52,7 +53,7 @@ async def all(message: types.Message):
                     text += f'<a href="tg://user?id={active_users[u][1]}">{active_users[u][2]}</a> '
                 if (u + 1) % 4 == 0 or num == u + 1:
                     await message.answer(text=text, parse_mode='HTML')
-                    text = ""
+                    text = msg + '\n'
             functions.setSetting('all', 'None')
             await asyncio.sleep(300)
             functions.setSetting('all', 'active')
@@ -64,11 +65,23 @@ async def all(message: types.Message):
 async def setEmoji(message: types.Message):
     if message.chat.type != 'private':
         emoji = message.text.replace("/setme ", '')
-        if emoji == "/setme":
+        if emoji == "/setme" or message.text == "/setme@cs2003_bot":
             await message.reply("Эмодзи не найден!")
         else:
             functions.setEmoji(emoji, message.from_user.id)
             await message.reply("Эмодзи установлен!")
+
+@dp.message_handler(commands=["setyou"])
+async def setEmoji(message: types.Message):
+    if message.chat.type != 'private' and message.from_user.id==config.ADMIN:
+        emoji = message.text.replace("/setyou ", '')
+        user_id = message.reply_to_message.from_user.id
+        if user_id is not None:
+            if emoji == "/setyou":
+                await message.reply("Эмодзи не найден!")
+            else:
+                functions.setEmoji(emoji, user_id)
+                await message.reply("Эмодзи установлен!")
 
 
 @dp.message_handler(commands=["unreg"])
@@ -368,7 +381,7 @@ async def blockUser(message: types.Message):
     if message.from_user.id == 347821020:
         userId = int(message.text.replace("/block ", ""))
         functions.setStatus(userId, 'Blocked')
-        await message.answer("Пользователь заблокирован!")
+        await message.answer(f"Пользователь <a href='tg://user?id={userId}'>{users[userId]}</a> заблокирован!", parse_mode='HTML')
 
 
 @dp.message_handler(commands=["unblock"])
@@ -376,7 +389,7 @@ async def blockUser(message: types.Message):
     if message.from_user.id == 347821020:
         userId = int(message.text.replace("/unblock ", ""))
         functions.setStatus(userId, 'None')
-        await message.answer("Пользователь разблокирован!")
+        await message.answer(f"Пользователь <a href='tg://user?id={userId}'>{users[userId]}</a> разблокирован!", parse_mode='HTML')
 
 
 @dp.message_handler(commands=["remove_from_bd"])
@@ -569,14 +582,15 @@ async def getMsg(msg: types.Message):
                 if status[0] == 'forNA':
                     ids = msg.text.split(', ')
                     for id in ids:
-                        await bot.send_message(functions.data[int(id) - 1][0], theText)
+                        sent = await bot.send_message(functions.data[int(id) - 1][0], f"Привет, <a href='tg://user?id={functions.data[int(id) - 1][0]}'>{users[functions.data[int(id) - 1][0]]}</a>!\n"+theText, parse_mode='HTML')
+                        await bot.send_message(config.ADMIN, f"{functions.data[int(id) - 1][0]} is {sent}")
                     functions.setStatus(msg.from_user.id, "None")
                     return
                 if status[0] == 'gotMsgForAll':
                     theText = msg.text
                     functions.setStatus(msg.from_user.id, "None")
                     for user in functions.data:
-                        await bot.send_message(user[0], theText)
+                        await bot.send_message(user[0], f"Привет, <a href='tg://user?id={user[0]}'>{users[user[0]]}</a>!\n"+theText, parse_mode='HTML')
                     return
                 if status[0] == 'questionNum':
                     functions.setStatus(msg.from_user.id, "None")
@@ -677,24 +691,24 @@ async def birthdayNotification():
                     for u in users.keys():
                         if u != userId and functions.cashSent(u, userId) is None:
                             await bot.send_message(u,
-                                                   f"У {name} день рождения через несколько дней! ({(functions.getUser(userId))[3]}). "
+                                                   f"Привет! <a href='tg://user?id={u}'>{users[u]}</a>!\nУ {name} день рождения через несколько дней! ({(functions.getUser(userId))[3]}). "
                                                    f"В связи с этим событием открыт сбор на каспи 87760156299 (1к+)",
-                                                   reply_markup=kb)
+                                                   reply_markup=kb, parse_mode='HTML')
                 elif functions.getBirthdayUsers(userId) == 7:
                     for u in users.keys():
                         if u != userId and functions.cashSent(u, userId) is None:
                             await bot.send_message(u,
-                                                   f"У {name} день рождения через неделю ({(functions.getUser(userId))[3]}). "
+                                                   f"Привет! <a href='tg://user?id={u}'>{users[u]}</a>!\nУ {name} день рождения через неделю ({(functions.getUser(userId))[3]}). "
                                                    f"В связи с этим событием открываю сбор на каспи 87760156299 (1к+)",
-                                                   reply_markup=kb)
+                                                   reply_markup=kb, parse_mode='HTML')
                 elif functions.getBirthdayUsers(userId) == 30 or functions.getBirthdayUsers(userId) == 31:
                     for u in users.keys():
                         if u != userId and functions.cashSent(u, userId) is None:
                             await bot.send_message(u,
-                                                   f"У {name} день рождения через месяц ({(functions.getUser(userId))[3]}). "
+                                                   f"Привет! <a href='tg://user?id={u}'>{users[u]}</a>!\nУ {name} день рождения через месяц ({(functions.getUser(userId))[3]}). "
                                                    f"В связи с этим событием прошу Вас отложить как минимум 1к на "
                                                    f"следующий месяц!",
-                                                   reply_markup=kb)
+                                                   reply_markup=kb, parse_mode='HTML')
                 elif functions.getBirthdayUsers(userId) == 0:
                     await bot.send_message(userId, "С днём рождения!")
             functions.makeActiveAll()
