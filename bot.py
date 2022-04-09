@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import asyncio
-import html
-import time
 from datetime import *
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup
 import aioschedule
@@ -40,7 +38,6 @@ async def start(message: types.Message):
     return
 
 
-
 @dp.message_handler(commands=["all"])
 async def all(message: types.Message):
     if message.chat.type != 'private':
@@ -50,22 +47,23 @@ async def all(message: types.Message):
             num = len(active_users)
             for u in range(len(active_users)):
                 if active_users[u][2] == "None":
-                    text+=f'<a href="tg://user?id={active_users[u][1]}">{active_users[u][0]}</a> '
+                    text += f'<a href="tg://user?id={active_users[u][1]}">{active_users[u][0]}</a> '
                 else:
-                    text+=f'<a href="tg://user?id={active_users[u][1]}">{active_users[u][2]}</a> '
-                if (u+1)%4==0 or num==u+1:
+                    text += f'<a href="tg://user?id={active_users[u][1]}">{active_users[u][2]}</a> '
+                if (u + 1) % 4 == 0 or num == u + 1:
                     await message.answer(text=text, parse_mode='HTML')
-                    text=""
-            functions.setSetting('all','None')
+                    text = ""
+            functions.setSetting('all', 'None')
             await asyncio.sleep(300)
-            functions.setSetting('all','active')
+            functions.setSetting('all', 'active')
         else:
-            await bot.send_message(message.from_user.id,"Функция была применена недавно!")
+            await bot.send_message(message.from_user.id, "Функция была применена недавно!")
+
 
 @dp.message_handler(commands=["setme"])
 async def setEmoji(message: types.Message):
     if message.chat.type != 'private':
-        emoji = message.text.replace("/setme ",'')
+        emoji = message.text.replace("/setme ", '')
         if emoji == "/setme":
             await message.reply("Эмодзи не найден!")
         else:
@@ -96,7 +94,6 @@ async def question(message: types.Message):
         functions.setStatus(message.from_user.id, "question")
         await message.reply("Напишите Ваш вопрос либо отмените свое действие /cancel")
     return
-
 
 
 @dp.message_handler(commands=["birthday"])
@@ -210,7 +207,6 @@ async def unsubscribe(message: types.Message):
     return
 
 
-
 # ADMIN
 
 @dp.message_handler(commands=['admin'])
@@ -262,6 +258,7 @@ async def showUsers(message: types.Message):
         await message.reply("У Вас недостаточно прав либо функция недоступна в беседе!")
     return
 
+
 @dp.message_handler(text=['Заданные вопросы'])
 async def questions(message: types.Message):
     if message.from_user.id == 347821020 and message.chat.type == 'private':
@@ -271,6 +268,7 @@ async def questions(message: types.Message):
         await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
     return
 
+
 @dp.message_handler(text=['Управление курсами'])
 async def courses(message: types.Message):
     if message.from_user.id == config.ADMIN:
@@ -279,11 +277,10 @@ async def courses(message: types.Message):
         await message.answer(text)
         keyboard = ReplyKeyboardMarkup(resize_keyboard=True).add(*list)
         if text != "Нет зарегистрированых курсов!":
-            await message.answer("Введите ID курса",reply_markup=keyboard)
+            await message.answer("Введите ID курса", reply_markup=keyboard)
             functions.setStatus(message.from_user.id, "Courses")
     else:
         await message.answer("Нет доступа!")
-
 
 
 @dp.message_handler(text=['Поместить в актуальные'])
@@ -406,6 +403,7 @@ async def updateData(message: types.Message):
     else:
         await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
 
+
 @dp.message_handler(text=["Рассылка для определенных людей"])
 async def msgs(message: types.Message):
     if message.from_user.id == 347821020 and message.chat.type == 'private':
@@ -425,6 +423,7 @@ async def forAllMsg(message: types.Message):
         await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
     return
 
+
 @dp.message_handler(text=['Удалить вопросы'])
 async def delQuestions(message: types.Message):
     if message.from_user.id == 347821020 and message.chat.type == 'private':
@@ -439,15 +438,17 @@ async def delQuestions(message: types.Message):
         await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
     return
 
+
 @dp.message_handler(commands=['ac'])
 async def addCourse(message: types.Message):
     if message.from_user.id == config.ADMIN:
         functions.setStatus(config.ADMIN, 'None')
-        data = message.text.replace("/ac ","")
+        data = message.text.replace("/ac ", "")
         course = data.split(",")
         functions.addCourse(course[0], course[1])
         await message.answer(f"Курс {course[1]}: {course[0]} успешно добавлен!")
     return
+
 
 @dp.callback_query_handler(lambda c: c.data and c.data.startswith('cash'))
 async def cashSent(callback_query: types.CallbackQuery):
@@ -699,6 +700,7 @@ async def birthdayNotification():
             functions.makeActiveAll()
             functions.setInactive(1582515158)
             await asyncio.sleep(60)
+
 
 async def on_startup(_):
     asyncio.create_task(birthdayNotification())
