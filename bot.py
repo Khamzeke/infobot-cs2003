@@ -20,7 +20,6 @@ print(users)
 theText = ""
 
 blacklist = []
-reactionEnabled = False
 
 
 @dp.message_handler(commands=['start'])
@@ -194,10 +193,14 @@ async def func(message: types.Message):
         await bot.send_message(message.from_user.id, "Вы заблокированы на некоторое время!")
     else:
         user = functions.getUser(message.from_user.id)
-        if user is None or user[2] == 'None':
+        if user is None or user[2] == 'None' and functions.getStatus(message.from_user.id)[0] != 'deleted':
             functions.deleteStudent(message.from_user.id)
             functions.addStudent(message.from_user.id, message.from_user.username, "None")
             await message.answer("Напишите свое имя на английском языке(Example: Sugurov Khamza)")
+            functions.setStatus(message.from_user.id, "theName")
+        elif functions.getStatus(message.from_user.id)[0] == 'deleted':
+            kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(KeyboardButton(text=user[2]))
+            await message.answer("Напишите свое имя на английском языке(Example: Sugurov Khamza)", reply_markup=kb)
             functions.setStatus(message.from_user.id, "theName")
         else:
             await message.answer("Вы уже подписаны!")
@@ -241,22 +244,6 @@ async def admin(message: types.Message):
         await message.answer("Привет, Хамзеке, вот доступные функции", reply_markup=keyboard)
     else:
         await message.reply("Функция недоступна в беседе либо у Вас недостаточно прав!")
-    return
-
-
-@dp.message_handler(commands=['disable', 'enable'])
-async def switchReaction(message: types.Message):
-    global reactionEnabled
-    if message.from_user.id == 347821020:
-        msg = message.text.replace("/", '').strip()
-        if msg == 'disable':
-            reactionEnabled = False
-        if msg == 'enable':
-            reactionEnabled = True
-
-        return
-    else:
-        await message.reply("У Вас недостаточно прав!")
     return
 
 
@@ -491,7 +478,7 @@ async def wait(seconds, userId):
     functions.clearBirthdayStatuses()
 
 
-@dp.message_handler()
+@dp.message_handler(content_types=['any'])
 async def getMsg(msg: types.Message):
     global users
     global theText
@@ -500,6 +487,7 @@ async def getMsg(msg: types.Message):
     functions.rollBack()
     status = functions.getStatus(msg.from_user.id)
     functions.setActive(msg.from_user.id)
+    print(status)
     if status is None and msg.chat.type == 'private':
         await msg.reply("Вы должны подписаться на бота, прежде чем использовать его функции.")
         return
@@ -507,31 +495,21 @@ async def getMsg(msg: types.Message):
         await msg.delete()
         await bot.send_message(msg.from_user.id, "Вы заблокированы на некоторое время!")
     else:
-        if msg.text.lower() == "отмена":
-            await msg.reply("Задача отменена")
-            functions.setStatus(msg.from_user.id, "None")
+        if type(msg.text) == 'NoneType':
             return
         if status[0] == 'question':
             functions.addQuestion(msg.from_user.id, msg.text)
-            await bot.send_message(347821020, "Задан новый вопрос, чтобы просмотреть /questions")
+            kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+            kb.add("Заданные вопросы")
+            await bot.send_message(347821020, "Задан новый вопрос!", reply_markup=kb)
             await msg.reply("Вопрос отправлен, ожидайте ответ!")
             functions.setStatus(msg.from_user.id, "None")
-            return
-        if msg.text == "+":
-            if reactionEnabled:
-                await msg.reply("Принято!")
-                await bot.send_message(347821020, msg.from_user.username + " согласился!")
             return
         if msg.text.lower() == "бот" and msg.from_user.id == 347821020:
             keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
             keyboard.add(KeyboardButton(text="⌨️Команды"))
             keyboard.add(KeyboardButton(text="ℹ️Актуальные вопросы"))
             await msg.reply("Что Вас интересует?", reply_markup=keyboard)
-            return
-        if msg.text == "-":
-            if reactionEnabled:
-                await msg.reply("Принято!")
-                await bot.send_message(347821020, msg.from_user.username + " отказался от участия!")
             return
         if status[0] == 'theName':
             name = msg.text
@@ -635,18 +613,6 @@ async def getMsg(msg: types.Message):
                     for id in ids:
                         functions.deleteQuestion(id)
                     await msg.reply("Вопросы удалены!")
-                    return
-                if status[0] == 'Courses':
-                    if msg.text.isdigit():
-                        id = int(msg.text)
-                        course = functions.findCourse(id)
-                        if not course:
-                            await msg.answer("Курс не найден!")
-                        else:
-                            await msg.answer(course)
-                    else:
-                        functions.setStatus(config.ADMIN, 'None')
-                        await msg.answer("Некорректное значение!")
                     return
             if status[0] == 'cashSent':
                 if msg.text.isdigit():

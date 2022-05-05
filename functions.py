@@ -61,7 +61,7 @@ def deleteStudent(id):
     sql = f"DELETE FROM public.birthdaytable where student_id={id} or donater_id={id}"
     cursor.execute(sql)
     connection.commit()
-    new_sql = f"DELETE FROM public.students WHERE id = {id};"
+    new_sql = f"UPDATE public.students SET status='deleted', active='False'	WHERE id = {id}"
     cursor.execute(new_sql)
     connection.commit()
 
