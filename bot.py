@@ -22,6 +22,9 @@ theText = ""
 blacklist = []
 interesting = []
 
+forward_bt = InlineKeyboardButton('Следующий', callback_data='question:forward')
+backward_bt = InlineKeyboardButton('Предыдущий', callback_data='question:backward')
+inline_kb = InlineKeyboardMarkup().add(*[backward_bt, forward_bt])
 
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message):
@@ -148,9 +151,6 @@ async def actualQuestions(message: types.Message):
         questions = functions.getInteresting()
         interesting = []
         s = "АКТУАЛЬНЫЕ ВОПРОСЫ:\n"
-        forward_bt = InlineKeyboardButton('Следующий', callback_data='question:forward')
-        backward_bt = InlineKeyboardButton('Предыдущий', callback_data='question:backward')
-        inline_kb = InlineKeyboardMarkup().add(*[forward_bt, backward_bt])
         for question in questions:
             q = f"Вопрос: {question[0]}\n" \
                 f"Ответ: {question[1]}"
@@ -161,12 +161,24 @@ async def actualQuestions(message: types.Message):
 
 @dp.callback_query_handler(lambda c: c.data and c.data.startswith('question:'))
 async def cashSent(callback_query: types.CallbackQuery):
+    index = functions.getQuestionIndex(callback_query.message.chat.id, callback_query.message.message_id)
     if callback_query.data == 'question:forward':
-        index = functions.getQuestionIndex(callback_query.message.chat.id, callback_query.message.message_id)
-
+        if index==len(interesting)-1:
+            await callback_query.answer('Это последний вопрос!')
+        else:
+            index+=1
     elif callback_query.data == 'question:backward':
+        if index==0:
+            await callback_query.answer('Это первый вопрос!')
+        else:
+            index-=1
+    question = interesting[index]
+    q = f"Вопрос: {question[0]}\n" \
+        f"Ответ: {question[1]}"
+    await callback_query.message.edit_text(q,reply_markup=inline_kb)
 
-        index = functions.getQuestionIndex(callback_query.message.chat.id, callback_query.message.message_id)
+
+
 
 @dp.message_handler(commands=['myQuestions'])
 async def myQuestions(message: types.Message):
