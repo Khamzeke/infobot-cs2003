@@ -20,6 +20,7 @@ print(users)
 theText = ""
 
 blacklist = []
+interesting = []
 
 
 @dp.message_handler(commands=['start'])
@@ -54,7 +55,7 @@ async def all(message: types.Message):
                     await message.answer(text=text, parse_mode='HTML')
                     text = msg + '\n'
             functions.setSetting('all', 'None')
-            await asyncio.sleep(300)
+            await asyncio.sleep(120)
             functions.setSetting('all', 'active')
         else:
             await bot.send_message(message.from_user.id, "Функция была применена недавно!")
@@ -138,20 +139,34 @@ async def answers(message: types.Message):
 
 @dp.message_handler(text=["ℹ️Актуальные вопросы"])
 async def actualQuestions(message: types.Message):
+    global interesting
     if functions.userBlocked(message.from_user.id):
         await message.delete()
         await bot.send_message(message.from_user.id, "Вы заблокированы на некоторое время!")
     else:
+        functions.deleteInterestingFromChat(message.chat.id)
         questions = functions.getInteresting()
+        interesting = []
         s = "АКТУАЛЬНЫЕ ВОПРОСЫ:\n"
+        forward_bt = InlineKeyboardButton('Следующий', callback_data='question:forward')
+        backward_bt = InlineKeyboardButton('Предыдущий', callback_data='question:backward')
+        inline_kb = InlineKeyboardMarkup().add(*[forward_bt, backward_bt])
         for question in questions:
-            s += "---------------------------\n" \
-                 "Вопрос номер " + str(question[4]) + ":\n" \
-                                                      "Вопрос: " + question[0] + "\n" \
-                                                                                 "Ответ: " + question[1] + "\n"
-        await message.answer(s)
+            q = f"Вопрос: {question[0]}\n" \
+                f"Ответ: {question[1]}"
+            interesting.append(q)
+        new_interesting = await message.answer(s+interesting[0], reply_markup=inline_kb)
+        functions.setInterestingToChat(message.chat.id, new_interesting.message_id)
     return
 
+@dp.callback_query_handler(lambda c: c.data and c.data.startswith('question:'))
+async def cashSent(callback_query: types.CallbackQuery):
+    if callback_query.data == 'question:forward':
+        index = functions.getQuestionIndex(callback_query.message.chat.id, callback_query.message.message_id)
+
+    elif callback_query.data == 'question:backward':
+
+        index = functions.getQuestionIndex(callback_query.message.chat.id, callback_query.message.message_id)
 
 @dp.message_handler(commands=['myQuestions'])
 async def myQuestions(message: types.Message):

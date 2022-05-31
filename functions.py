@@ -256,3 +256,24 @@ def setSetting(command, status):
     sql = f"UPDATE public.settings SET status='{status}' WHERE command='{command}'"
     cursor.execute(sql)
     connection.commit()
+
+def deleteInterestingFromChat(chat_id):
+    sql = f"delete from interesting where chat_id={chat_id}"
+    try:
+        cursor.execute(sql)
+        connection.commit()
+    except:
+        print("[LOG] Something went wrong!")
+
+def setInterestingToChat(chat_id, message_id):
+    sql = f"insert into interesting(chat_id, msg_id, question_index)VALUES ({int(chat_id)}, '{int(message_id)}, 0');"
+    try:
+        cursor.execute(sql)
+        connection.commit()
+    except:
+        print("[LOG] Something went wrong!")
+
+def getQuestionIndex(chat_id, message_id):
+    sql = f"select question_index from interesting where chat_id={chat_id} and msg_id={message_id}"
+    cursor.execute(sql)
+    return cursor.fetchone()[0]
