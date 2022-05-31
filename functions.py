@@ -263,17 +263,33 @@ def deleteInterestingFromChat(chat_id):
         cursor.execute(sql)
         connection.commit()
     except:
-        print("[LOG] Something went wrong!")
+        connection.rollback()
+        print("[LOG] Something went wrong during deleting the question!")
 
 def setInterestingToChat(chat_id, message_id):
-    sql = f"insert into interesting(chat_id, msg_id, question_index)VALUES ({int(chat_id)}, '{int(message_id)}, 0');"
+    sql = f"INSERT INTO interesting(chat_id, msg_id, question_index) VALUES ({int(chat_id)}, {int(message_id)}, 0);"
     try:
         cursor.execute(sql)
         connection.commit()
     except:
-        print("[LOG] Something went wrong!")
+        connection.rollback()
+        print("[LOG] Something went wrong during setting the question!")
 
 def getQuestionIndex(chat_id, message_id):
     sql = f"select question_index from interesting where chat_id={chat_id} and msg_id={message_id}"
     cursor.execute(sql)
     return cursor.fetchone()[0]
+
+def setQuestionIndex(chat_id, index):
+    sql = f"UPDATE public.interesting SET question_index={index} WHERE chat_id={chat_id}"
+    try:
+        cursor.execute(sql)
+        connection.commit()
+    except:
+        connection.rollback()
+        print("[LOG] Cannot update question index!")
+
+def interestingFromChatExist(chat_id):
+    sql = f"select * from public.interesting where chat_id={chat_id}"
+    cursor.execute(sql)
+    return cursor.fetchone()

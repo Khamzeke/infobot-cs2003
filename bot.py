@@ -147,6 +147,10 @@ async def actualQuestions(message: types.Message):
         await message.delete()
         await bot.send_message(message.from_user.id, "Вы заблокированы на некоторое время!")
     else:
+        await message.delete()
+        if functions.interestingFromChatExist(message.chat.id):
+            msg = functions.interestingFromChatExist(message.chat.id)
+            await bot.delete_message(msg[0],msg[1])
         functions.deleteInterestingFromChat(message.chat.id)
         questions = functions.getInteresting()
         interesting = []
@@ -161,22 +165,28 @@ async def actualQuestions(message: types.Message):
 
 @dp.callback_query_handler(lambda c: c.data and c.data.startswith('question:'))
 async def cashSent(callback_query: types.CallbackQuery):
-    index = functions.getQuestionIndex(callback_query.message.chat.id, callback_query.message.message_id)
-    if callback_query.data == 'question:forward':
-        if index==len(interesting)-1:
-            await callback_query.answer('Это последний вопрос!')
-        else:
-            index+=1
-    elif callback_query.data == 'question:backward':
-        if index==0:
-            await callback_query.answer('Это первый вопрос!')
-        else:
-            index-=1
-    question = interesting[index]
-    q = f"Вопрос: {question[0]}\n" \
-        f"Ответ: {question[1]}"
-    await callback_query.message.edit_text(q,reply_markup=inline_kb)
-
+    try:
+        index = functions.getQuestionIndex(callback_query.message.chat.id, callback_query.message.message_id)
+        s = "АКТУАЛЬНЫЕ ВОПРОСЫ:\n"
+        if callback_query.data == 'question:forward':
+            if index==len(interesting)-1:
+                await callback_query.answer('Это последний вопрос!')
+            else:
+                index+=1
+                question = interesting[index]
+                await callback_query.message.edit_text(s+question,reply_markup=inline_kb)
+                functions.setQuestionIndex(callback_query.message.chat.id, index)
+        elif callback_query.data == 'question:backward':
+            if index==0:
+                await callback_query.answer('Это первый вопрос!')
+            else:
+                index-=1
+                question = interesting[index]
+                await callback_query.message.edit_text(s+question,reply_markup=inline_kb)
+                functions.setQuestionIndex(callback_query.message.chat.id, index)
+    except:
+        print("[LOG] List index out of range")
+        print(f"{callback_query.message.chat.id}, {callback_query.message.message_id}, {index}")
 
 
 
