@@ -721,6 +721,7 @@ async def birthdayNotification():
 
 async def on_startup(_):
     asyncio.create_task(birthdayNotification())
+    await bot.send_message(config.ADMIN, 'Бот запустился!')
 
 
 if __name__ == '__main__':
